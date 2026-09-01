@@ -1,0 +1,5262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Score de Puxada · Consolidado & Detalhamento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=JetBrains+Mono:wght@400;500;700&family=Archivo:wght@400;600;800&family=Source+Sans+3:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Syne:wght@400;500;600;700;800&family=Unbounded:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<style>
+/* ---- KIT: Aura · tokens (camada 1) ---- */
+:root {
+  --bg: #080c14;
+  --plane: rgba(255,255,255,.04);
+  --plane-2: rgba(255,255,255,.02);
+  --stroke: rgba(255,255,255,.10);
+  --ink: #e8edf6;
+  --ink-2: #b8c1d1;
+  --muted: #8a93a5;
+  --acc: #67e8f9;
+  --acc-2: #93c5fd;
+  --good: #6ee7b7;
+  --bad: #fb7185;
+  --warn: #fbbf24;
+  --good-bg: rgba(110,231,183,.14);
+  --bad-bg: rgba(251,113,133,.14);
+  --warn-bg: rgba(251,191,36,.14);
+  --track: rgba(255,255,255,.06);
+  --grid: rgba(255,255,255,.055);
+  --radius: 18px;
+  --bw: 1px;
+  --shadow: 0 18px 50px -12px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
+  --font: 'Inter';
+  --display: 'Plus Jakarta Sans';
+  --mono: 'JetBrains Mono';
+  --c1: #67e8f9;
+  --c2: #60a5fa;
+  --c3: #6ee7b7;
+  --c4: #fbbf24;
+  --c5: #c084fc;
+  --on-acc: #04121a;
+  --on-cat: #04121a;
+  --on-good: #04150e;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding: 28px;
+}
+.app { max-width: 1420px; margin: 0 auto; }
+.topo { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 22px; flex-wrap: wrap; }
+.marca h1 { font-family: var(--display), system-ui, sans-serif; font-size: 21px; font-weight: 700; letter-spacing: -.3px; }
+.periodo { display: inline-flex; align-items: center; gap: 8px; padding: 9px 15px; border: var(--bw) solid var(--stroke);
+  border-radius: var(--radius); background: var(--plane); font-size: 13px; font-weight: 600; color: var(--ink); box-shadow: var(--shadow); font-variant-numeric: tabular-nums; }
+
+/* ---- LAYOUT: Clássico (camada 3) ---- */
+.grade { display: grid; grid-template-columns: repeat(12, 1fr); gap: 18px; }
+.grade > div { min-width: 0; display: flex; flex-direction: column; }
+.grade > div > * { flex: 1; }
+.grade section { box-sizing: border-box; }
+@media (max-width: 900px) { .grade > div { grid-column: span 12 !important; } }
+
+/* ---- assinatura glass: fio de luz + hover ---- */
+.grade section { position: relative; transition: transform .2s ease; }
+.grade section::before { content: ''; position: absolute; left: 16px; right: 16px; top: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--acc), transparent); opacity: .32; pointer-events: none; transition: opacity .2s ease; }
+.grade section:hover { transform: translateY(-2px); }
+.grade section:hover::before { opacity: .6; }
+@media (prefers-reduced-motion: reduce) { .grade section, .grade section::before { transition: none; } .grade section:hover { transform: none; } }
+
+/* ---- TABS NAVIGATION ---- */
+.nav-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 22px;
+  border-bottom: var(--bw) solid var(--stroke);
+  padding-bottom: 12px;
+  flex-wrap: wrap;
+}
+.nav-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 20px;
+  border: var(--bw) solid var(--stroke);
+  border-radius: var(--radius);
+  background: var(--plane);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s ease;
+  user-select: none;
+}
+.nav-tab-btn:hover {
+  background: var(--plane-2);
+  color: var(--ink);
+  border-color: var(--acc);
+}
+.nav-tab-btn.active {
+  background: rgba(103,232,249,.12);
+  color: var(--acc);
+  border-color: var(--acc);
+  box-shadow: 0 0 16px rgba(103,232,249,.15);
+}
+.nav-tab-badge {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.08);
+  color: var(--ink);
+  border: var(--bw) solid var(--stroke);
+  font-variant-numeric: tabular-nums;
+}
+.tab-content-panel {
+  display: none;
+}
+.tab-content-panel.active {
+  display: block;
+}
+
+/* ---- ABA COBRANÇA ---- */
+.cobranca-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.filter-card {
+  background: var(--plane);
+  border: var(--bw) solid var(--stroke);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+.filter-card::before {
+  content: ''; position: absolute; left: 16px; right: 16px; top: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--acc), transparent);
+  opacity: .32; pointer-events: none;
+}
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.filter-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+.filter-input, .filter-select {
+  background: var(--plane-2);
+  border: var(--bw) solid var(--stroke);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--ink);
+  outline: none;
+  transition: all .2s ease;
+  width: 100%;
+}
+.filter-input:focus, .filter-select:focus {
+  border-color: var(--acc);
+  box-shadow: 0 0 0 2px rgba(103,232,249,.15);
+  background: rgba(255,255,255,.05);
+}
+.filter-select option {
+  background: #080c14;
+  color: #e8edf6;
+}
+.filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-top: 1px dashed var(--stroke);
+  padding-top: 14px;
+}
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s ease;
+  border: var(--bw) solid var(--stroke);
+  background: var(--plane-2);
+  color: var(--ink);
+  font-family: inherit;
+}
+.btn-action:hover {
+  background: var(--plane);
+  border-color: var(--acc);
+}
+.btn-action-primary {
+  background: rgba(103,232,249,.15);
+  border-color: var(--acc);
+  color: var(--acc);
+}
+.btn-action-primary:hover {
+  background: rgba(103,232,249,.25);
+  color: #fff;
+  box-shadow: 0 0 14px rgba(103,232,249,.25);
+}
+
+/* KPI Summary Cards inside Cobrança */
+.cobranca-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+.cobranca-kpi-card {
+  background: var(--plane-2);
+  border: var(--bw) solid var(--stroke);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+}
+.cobranca-kpi-label {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.cobranca-kpi-val {
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 6px;
+  letter-spacing: -.6px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.cobranca-kpi-sub {
+  font-size: 11.5px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* Table Card */
+.table-card {
+  background: var(--plane);
+  border: var(--bw) solid var(--stroke);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.table-card::before {
+  content: ''; position: absolute; left: 16px; right: 16px; top: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--acc), transparent);
+  opacity: .32; pointer-events: none;
+}
+.table-header-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: var(--bw) solid var(--stroke);
+  background: var(--plane-2);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  max-height: 560px;
+}
+.tabela-cobranca {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  text-align: left;
+  white-space: nowrap;
+}
+.tabela-cobranca th {
+  background: #080c14;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  padding: 12px 14px;
+  border-bottom: var(--bw) solid var(--stroke);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  cursor: pointer;
+  user-select: none;
+  transition: color .2s ease;
+}
+.tabela-cobranca th:hover {
+  color: var(--acc);
+}
+.tabela-cobranca th .sort-icon {
+  font-size: 10px;
+  margin-left: 4px;
+  opacity: .4;
+  display: inline-block;
+}
+.tabela-cobranca th.active-sort {
+  color: var(--acc);
+}
+.tabela-cobranca th.active-sort .sort-icon {
+  opacity: 1;
+  color: var(--acc);
+}
+.tabela-cobranca td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.tabela-cobranca tbody tr {
+  transition: background .15s ease;
+}
+.tabela-cobranca tbody tr:hover {
+  background: rgba(103,232,249,.04);
+}
+.tabela-cobranca tbody tr.row-nao-conforme {
+  background: rgba(251,113,133,.02);
+}
+.tabela-cobranca tbody tr.row-nao-conforme:hover {
+  background: rgba(251,113,133,.06);
+}
+
+/* Badges in table */
+.badge-tbl {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+.badge-tbl.good {
+  background: var(--good-bg);
+  color: var(--good);
+  border: 1px solid rgba(110,231,183,.3);
+}
+.badge-tbl.bad {
+  background: var(--bad-bg);
+  color: var(--bad);
+  border: 1px solid rgba(251,113,133,.3);
+}
+.badge-tbl.warn {
+  background: var(--warn-bg);
+  color: var(--warn);
+  border: 1px solid rgba(251,191,36,.3);
+}
+.badge-tbl.neutral {
+  background: var(--plane);
+  color: var(--ink-2);
+  border: var(--bw) solid var(--stroke);
+}
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-top: var(--bw) solid var(--stroke);
+  background: var(--plane-2);
+  font-size: 12px;
+  color: var(--muted);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.page-btn {
+  background: var(--plane);
+  border: var(--bw) solid var(--stroke);
+  border-radius: 6px;
+  color: var(--ink);
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all .15s ease;
+  font-family: inherit;
+}
+.page-btn:hover:not(:disabled) {
+  border-color: var(--acc);
+  color: var(--acc);
+}
+.page-btn:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+/* Modal de Metas */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 6, 12, 0.78);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.modal-overlay.active {
+  display: flex;
+}
+.modal-card {
+  background: #0d131f;
+  border: var(--bw) solid var(--stroke);
+  border-radius: var(--radius);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.75);
+  width: 100%;
+  max-width: 490px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: relative;
+}
+.modal-card::before {
+  content: ''; position: absolute; left: 20px; right: 20px; top: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--acc), transparent);
+  opacity: .5; pointer-events: none;
+}
+.meta-input-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--plane-2);
+  border: var(--bw) solid var(--stroke);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+.meta-input-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.meta-input-field input {
+  width: 72px;
+  background: var(--plane);
+  border: var(--bw) solid var(--stroke);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: right;
+  outline: none;
+  font-family: inherit;
+}
+.meta-input-field input:focus {
+  border-color: var(--acc);
+  box-shadow: 0 0 0 2px rgba(103,232,249,.15);
+}
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="topo">
+      <div class="marca">
+        <h1 id="header-titulo">Score de Puxada · Consolidado</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span class="periodo" id="badge-atualizacao">Carregando dados...</span>
+        <button class="btn-action" onclick="abrirModalMetas()" style="padding:8px 14px;font-size:12.5px;box-shadow:var(--shadow);">
+          ⚙️ Ajustar Metas
+        </button>
+        <button class="btn-action" id="btn-sync-drive" onclick="sincronizarComDrive()" style="padding:8px 14px;font-size:12.5px;box-shadow:var(--shadow);">
+          🔄 Sincronizar Drive
+        </button>
+      </div>
+    </div>
+
+    <!-- NAVEGAÇÃO ENTRE ABAS -->
+    <div class="nav-tabs">
+      <button class="nav-tab-btn active" onclick="alternarAba('consolidado')">
+        <span>📊 Visão Consolidada</span>
+      </button>
+      <button class="nav-tab-btn" onclick="alternarAba('cobranca')">
+        <span>📋 Detalhamento de Cobrança</span>
+        <span class="nav-tab-badge" id="badge-total-trips">0 viagens</span>
+      </button>
+    </div>
+
+    <!-- ABA 1: CONSOLIDADO (SCORE GERAL) -->
+    <div id="tab-consolidado" class="tab-content-panel active">
+      <div class="grade">
+        
+        <!-- HERO: SCORE GERAL -->
+        <div style="grid-column: span 12">
+          <section style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;display:flex;flex-direction:column;justify-content:center">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px">
+              <div><b style="font-size:14px;font-weight:600;color:var(--ink)">Score Geral de Puxada</b></div>
+            </div>
+            <div id="hero-score-geral" style="font-size:46px;font-weight:800;letter-spacing:-1.8px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums">--%</div>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:14px">
+              <span id="hero-badge-meta" style="font-size:13px;font-weight:700;padding:5px 10px;border-radius:var(--radius);color:var(--good);background:var(--good-bg)">▲ 3 pilares</span>
+              <span id="hero-composicao" style="font-size:12.5px;color:var(--muted)">calculando composição dos 3 pilares...</span>
+            </div>
+          </section>
+        </div>
+
+        <!-- KPIS DOS 3 PILARES -->
+        <div style="grid-column: span 12">
+          <div class="kpis-pilares-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:14px;align-content:center;height:100%;box-sizing:border-box">
+            <div style="background:var(--plane-2);border:var(--bw) solid var(--stroke);border-radius:var(--radius);padding:14px 16px">
+              <div style="font-size:11.5px;color:var(--muted)">Agendamento</div>
+              <div id="kpi-agendamento-val" style="font-size:22px;font-weight:700;margin-top:6px;letter-spacing:-.6px;color:var(--ink);font-variant-numeric:tabular-nums">--%</div>
+              <div id="kpi-agendamento-diff" style="font-size:11.5px;font-weight:600;margin-top:4px;color:var(--good)">Meta: 90%</div>
+            </div>
+            <div style="background:var(--plane-2);border:var(--bw) solid var(--stroke);border-radius:var(--radius);padding:14px 16px">
+              <div style="font-size:11.5px;color:var(--muted)">Check-in &gt; 1h</div>
+              <div id="kpi-checkin-val" style="font-size:22px;font-weight:700;margin-top:6px;letter-spacing:-.6px;color:var(--ink);font-variant-numeric:tabular-nums">--%</div>
+              <div id="kpi-checkin-diff" style="font-size:11.5px;font-weight:600;margin-top:4px;color:var(--bad)">Meta: 70%</div>
+            </div>
+            <div style="background:var(--plane-2);border:var(--bw) solid var(--stroke);border-radius:var(--radius);padding:14px 16px">
+              <div style="font-size:11.5px;color:var(--muted)">Espelhamento</div>
+              <div id="kpi-esp-val" style="font-size:22px;font-weight:700;margin-top:6px;letter-spacing:-.6px;color:var(--ink);font-variant-numeric:tabular-nums">--%</div>
+              <div id="kpi-esp-diff" style="font-size:11.5px;font-weight:600;margin-top:4px;color:var(--bad)">Meta: 95%</div>
+            </div>
+            <div style="background:var(--plane-2);border:var(--bw) solid var(--stroke);border-radius:var(--radius);padding:14px 16px">
+              <div style="font-size:11.5px;color:var(--muted)">Total Viagens</div>
+              <div id="kpi-viagens-val" style="font-size:22px;font-weight:700;margin-top:6px;letter-spacing:-.6px;color:var(--ink);font-variant-numeric:tabular-nums">--</div>
+              <div id="kpi-viagens-periodo" style="font-size:11.5px;font-weight:600;margin-top:4px;color:var(--good)">Base Consolidada</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRÁFICO COMBO: EVOLUÇÃO DIÁRIA -->
+        <div style="grid-column: span 12">
+          <section style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 24px;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:8px;flex-wrap:wrap;">
+              <div>
+                <b style="font-size:14px;font-weight:600;color:var(--ink)">Evolução Diária do Score de Puxada & Volume de Viagens</b>
+                <div id="chart-sub-label" style="font-size:12px;color:var(--muted);margin-top:3px">visão diária contínua por dia de carregamento</div>
+              </div>
+            </div>
+            <div data-chart="linha" style="height:350px; width:100%;"></div>
+          </section>
+        </div>
+
+        <!-- RANKING DE MOTORISTAS POR SCORE -->
+        <div style="grid-column: span 12">
+          <section style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px">
+              <div>
+                <b style="font-size:14px;font-weight:600;color:var(--ink)">Ranking de Motoristas por Score</b>
+                <div id="subtitulo-ranking-motoristas" style="font-size:12px;color:var(--muted);margin-top:3px">maiores e menores aderências ao score de puxada · mínimo de 4 viagens no período</div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;">
+              <!-- MELHORES MOTORISTAS -->
+              <div>
+                <div id="titulo-ranking-mot-top" style="font-size:12px;font-weight:700;color:var(--good);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px">
+                  ⭐ Melhores Motoristas (Acima da Meta)
+                </div>
+                <div id="ranking-motoristas-top" style="display:flex;flex-direction:column;gap:13px"></div>
+              </div>
+
+              <!-- PIORES MOTORISTAS -->
+              <div>
+                <div id="titulo-ranking-mot-bottom" style="font-size:12px;font-weight:700;color:var(--bad);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px">
+                  ⚠️ Piores Motoristas (Menor Aderência / Cobrança)
+                </div>
+                <div id="ranking-motoristas-bottom" style="display:flex;flex-direction:column;gap:13px"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- RANKING DE VEÍCULOS (POR PLACA) -->
+        <div style="grid-column: span 12">
+          <section style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px">
+              <div>
+                <b style="font-size:14px;font-weight:600;color:var(--ink)">Ranking de Veículos por Placa</b>
+                <div id="subtitulo-ranking-veiculos" style="font-size:12px;color:var(--muted);margin-top:3px">aderência ao score de puxada por placa de veículo · mínimo de 4 viagens no período</div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;">
+              <!-- MELHORES VEÍCULOS -->
+              <div>
+                <div id="titulo-ranking-veic-top" style="font-size:12px;font-weight:700;color:var(--good);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px">
+                  🚛 Melhores Veículos (Acima da Meta)
+                </div>
+                <div id="ranking-veiculos-top" style="display:flex;flex-direction:column;gap:13px"></div>
+              </div>
+
+              <!-- PIORES VEÍCULOS -->
+              <div>
+                <div id="titulo-ranking-veic-bottom" style="font-size:12px;font-weight:700;color:var(--bad);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px">
+                  ⚠️ Piores Veículos (Menor Aderência / Cobrança)
+                </div>
+                <div id="ranking-veiculos-bottom" style="display:flex;flex-direction:column;gap:13px"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- PLACAS NÃO CADASTRADAS NA BASE -->
+        <div style="grid-column: span 12">
+          <section style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+              <div>
+                <b id="placas-unreg-titulo" style="font-size:14px;font-weight:600;color:var(--ink)">Placas Não Cadastradas na Base</b>
+                <div style="font-size:12px;color:var(--muted);margin-top:3px">veículos presentes nas viagens sem cadastro formal em MOTORISTAS</div>
+              </div>
+              <span id="badge-unreg-pendentes" style="font-size:11.5px;color:var(--warn);background:var(--warn-bg);padding:4px 10px;border-radius:var(--radius);font-weight:600;white-space:nowrap;">
+                ⚠️ Identificadores Pendentes
+              </span>
+            </div>
+
+            <div id="grid-placas-nao-cadastradas" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;"></div>
+          </section>
+        </div>
+
+        <!-- COMPARAÇÃO ENTRE TRANSPORTADORAS -->
+        <div style="grid-column: span 12">
+          <section style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px">
+              <div>
+                <b style="font-size:14px;font-weight:600;color:var(--ink)">Comparação entre Transportadoras</b>
+                <div style="font-size:12px;color:var(--muted);margin-top:3px">aderência ao score de puxada e quebra dos 3 pilares para cobrança</div>
+              </div>
+            </div>
+
+            <div id="lista-comparacao-transportadoras" style="display:flex;flex-direction:column;gap:14px;"></div>
+          </section>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ABA 2: DETALHAMENTO DE COBRANÇA -->
+    <div id="tab-cobranca" class="tab-content-panel">
+      <div class="cobranca-container">
+        
+        <!-- CARDS DE RESUMO DO FILTRO ATIVO -->
+        <div class="cobranca-kpis">
+          <div class="cobranca-kpi-card">
+            <div class="cobranca-kpi-label">Viagens Filtradas</div>
+            <div class="cobranca-kpi-val" id="kpi-total-filtrado">0</div>
+            <div class="cobranca-kpi-sub" id="kpi-sub-total-filtrado" style="color:var(--muted)">no período</div>
+          </div>
+          <div class="cobranca-kpi-card">
+            <div class="cobranca-kpi-label">Viagens 100% Conformes</div>
+            <div class="cobranca-kpi-val" id="kpi-total-conformes" style="color:var(--good)">0</div>
+            <div class="cobranca-kpi-sub" id="kpi-pct-conformes" style="color:var(--good)">0% de conformidade</div>
+          </div>
+          <div class="cobranca-kpi-card">
+            <div class="cobranca-kpi-label">Com Não Conformidade</div>
+            <div class="cobranca-kpi-val" id="kpi-total-ofensores" style="color:var(--bad)">0</div>
+            <div class="cobranca-kpi-sub" id="kpi-pct-ofensores" style="color:var(--bad)">0% para cobrança</div>
+          </div>
+          <div class="cobranca-kpi-card">
+            <div class="cobranca-kpi-label">Check-in > 1h Realizado</div>
+            <div class="cobranca-kpi-val" id="kpi-total-checkin">0</div>
+            <div class="cobranca-kpi-sub" id="kpi-pct-checkin" style="color:var(--bad)">0% (Meta 70%)</div>
+          </div>
+          <div class="cobranca-kpi-card">
+            <div class="cobranca-kpi-label">Espelhamento Ativo</div>
+            <div class="cobranca-kpi-val" id="kpi-total-esp">0</div>
+            <div class="cobranca-kpi-sub" id="kpi-pct-esp" style="color:var(--bad)">0% (Meta 95%)</div>
+          </div>
+        </div>
+
+        <!-- FILTROS NO TOPO DA ABA DE COBRANÇA -->
+        <div class="filter-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div>
+              <b style="font-size:14px;font-weight:600;color:var(--ink)">Filtros de Apoio à Cobrança</b>
+              <div style="font-size:12px;color:var(--muted);margin-top:3px">Filtros isolados desta aba para auditoria detalhada de viagens</div>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn-action" onclick="limparFiltrosCobranca()">🔄 Limpar Filtros</button>
+              <button class="btn-action btn-action-primary" onclick="exportarCobrancaCSV()">📥 Exportar CSV (Cobrança)</button>
+            </div>
+          </div>
+
+          <div class="filter-grid">
+            <div class="filter-field">
+              <label class="filter-label">🏢 Transportadora</label>
+              <select id="filtro-transp" class="filter-select" onchange="aplicarFiltrosCobranca()">
+                <option value="TODAS">Todas as Transportadoras</option>
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label class="filter-label">⚠️ Indicador com Falha</label>
+              <select id="filtro-falha" class="filter-select" onchange="aplicarFiltrosCobranca()">
+                <option value="TODOS">Todos os Registros</option>
+                <option value="NAO_CONFORMES">Apenas Não Conformes (Qualquer Falha)</option>
+                <option value="CHECKIN_FALHA">Falha em Check-in > 1h</option>
+                <option value="ESP_FALHA">Falha em Espelhamento</option>
+                <option value="AMBOS_FALHA">Falha em Ambos (Check-in + Espelhamento)</option>
+                <option value="CONFORMES">Apenas Conformes (100% OK)</option>
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label class="filter-label">📅 Data Início</label>
+              <input type="date" id="filtro-data-inicio" class="filter-input" onchange="aplicarFiltrosCobranca()">
+            </div>
+
+            <div class="filter-field">
+              <label class="filter-label">📅 Data Fim</label>
+              <input type="date" id="filtro-data-fim" class="filter-input" onchange="aplicarFiltrosCobranca()">
+            </div>
+
+            <div class="filter-field" style="grid-column: span 2;">
+              <label class="filter-label">🔍 Busca Rápida (Motorista / Placa / DT)</label>
+              <input type="text" id="filtro-busca" class="filter-input" placeholder="Ex: Nome do motorista, placa, DT..." oninput="aplicarFiltrosCobranca()">
+            </div>
+          </div>
+        </div>
+
+        <!-- TABELA DETALHADA POR VIAGEM -->
+        <div class="table-card">
+          <div class="table-header-info">
+            <div>
+              <b style="font-size:13.5px;font-weight:600;color:var(--ink)">Evidências de Viagens por DT</b>
+              <span style="font-size:12px;color:var(--muted);margin-left:8px;" id="lbl-status-registros">Exibindo viagens</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted)">
+              💡 Dica: Clique nos cabeçalhos para ordenar as colunas
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="tabela-cobranca" id="tabela-cobranca">
+              <thead>
+                <tr>
+                  <th onclick="ordenarTabela('data')">Data <span class="sort-icon" id="sort-data">↕</span></th>
+                  <th onclick="ordenarTabela('dt')">DT / FO <span class="sort-icon" id="sort-dt">↕</span></th>
+                  <th onclick="ordenarTabela('motorista')">Motorista <span class="sort-icon" id="sort-motorista">↕</span></th>
+                  <th onclick="ordenarTabela('placa')">Placa <span class="sort-icon" id="sort-placa">↕</span></th>
+                  <th onclick="ordenarTabela('transportadora')">Transportadora <span class="sort-icon" id="sort-transportadora">↕</span></th>
+                  <th onclick="ordenarTabela('checkin')">Check-in > 1h <span class="sort-icon" id="sort-checkin">↕</span></th>
+                  <th onclick="ordenarTabela('espelhamento')">Espelhamento <span class="sort-icon" id="sort-espelhamento">↕</span></th>
+                  <th onclick="ordenarTabela('motivo')">Motivo da Não Conformidade <span class="sort-icon" id="sort-motivo">↕</span></th>
+                </tr>
+              </thead>
+              <tbody id="tbody-cobranca">
+                <!-- Linhas geradas dinamicamente -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-footer">
+            <div id="pagination-info">Mostrando 0-0 de 0 viagens</div>
+            <div class="pagination-controls">
+              <button class="page-btn" id="btn-prev-page" onclick="mudarPagina(-1)" disabled>◀ Anterior</button>
+              <span id="page-num-display" style="font-variant-numeric:tabular-nums;color:var(--ink);font-weight:600;">1 / 1</span>
+              <button class="page-btn" id="btn-next-page" onclick="mudarPagina(1)" disabled>Próxima ▶</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE AJUSTE DE METAS -->
+  <div id="modal-metas" class="modal-overlay" onclick="if(event.target===this) fecharModalMetas()">
+    <div class="modal-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <b style="font-size:16px;font-weight:700;color:var(--ink);">⚙️ Configuração de Metas Operacionais</b>
+        <button onclick="fecharModalMetas()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+      </div>
+      
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="meta-input-group">
+          <b style="font-size:13.5px;color:var(--ink);">🎯 Meta Score Geral</b>
+          <div class="meta-input-field">
+            <input type="number" id="inp-meta-score" min="1" max="100" step="1" value="80">
+            <span style="font-weight:700;color:var(--ink);">%</span>
+          </div>
+        </div>
+
+        <div class="meta-input-group">
+          <b style="font-size:13.5px;color:var(--ink);">📅 Meta Agendamento</b>
+          <div class="meta-input-field">
+            <input type="number" id="inp-meta-ag" min="1" max="100" step="1" value="90">
+            <span style="font-weight:700;color:var(--ink);">%</span>
+          </div>
+        </div>
+
+        <div class="meta-input-group">
+          <b style="font-size:13.5px;color:var(--ink);">⏱️ Meta Check-in &gt; 1h</b>
+          <div class="meta-input-field">
+            <input type="number" id="inp-meta-checkin" min="1" max="100" step="1" value="70">
+            <span style="font-weight:700;color:var(--ink);">%</span>
+          </div>
+        </div>
+
+        <div class="meta-input-group">
+          <b style="font-size:13.5px;color:var(--ink);">📡 Meta Espelhamento</b>
+          <div class="meta-input-field">
+            <input type="number" id="inp-meta-esp" min="1" max="100" step="1" value="95">
+            <span style="font-weight:700;color:var(--ink);">%</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;gap:10px;border-top:1px dashed var(--stroke);padding-top:14px;margin-top:4px;flex-wrap:wrap;">
+        <button class="btn-action" onclick="restaurarMetasPadrao()">🔄 Restaurar Padrão</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-action" onclick="fecharModalMetas()">Cancelar</button>
+          <button class="btn-action btn-action-primary" onclick="salvarMetasUsuario()">💾 Salvar Metas</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ==========================================================================
+   DADOS 100% DINÂMICOS CARREGADOS DA BASE
+   ========================================================================== */
+const INITIAL_DATA = {
+  "generated_at": "2026-09-01T17:26:19.966248",
+  "unidade": "DISSOBEL / SOBRAL-CE",
+  "geo": "GEO NO",
+  "agendamento_summary": {
+    "geo": "GEO NO",
+    "revenda": "DISSOBEL/SOBRAL(CE)",
+    "grade_plan_carros": 144,
+    "carros_carregados": 138,
+    "pct_furo": 0.041666666666666664,
+    "carros_agendados": 128,
+    "pct_agendado": 0.927536231884058,
+    "pct_chegou_adiantado": 0.2916666666666667,
+    "pct_chegou_no_horario": 0.13194444444444445,
+    "pct_chegou_atrasado": 0.1111111111111111,
+    "pct_entrou_adiantado": 0.2222222222222222,
+    "pct_entrou_no_horario": 0.2986111111111111,
+    "pct_entrou_atrasado": 0.3472222222222222,
+    "meta": 0.9
+  },
+  "viagens": [
+    {
+      "dt": "6103358350",
+      "data_carregamento": "2026-08-01",
+      "placa": "SAV4A80",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103374457",
+      "data_carregamento": "2026-08-05",
+      "placa": "SAV4A80",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103396475",
+      "data_carregamento": "2026-08-11",
+      "placa": "SAV4A80",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103401580",
+      "data_carregamento": "2026-08-13",
+      "placa": "SAV4A80",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103415336",
+      "data_carregamento": "2026-08-18",
+      "placa": "SAV4A80",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103417966",
+      "data_carregamento": "2026-08-15",
+      "placa": "RYM7A88",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "TELHA SUL",
+      "motorista": "EMERSON",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103422744",
+      "data_carregamento": "2026-08-19",
+      "placa": "RYM7A88",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 0,
+      "pct_checkin": 0.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.0,
+      "cluster_esp": "Sem check-in e sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "EMERSON",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103442021",
+      "data_carregamento": "2026-08-22",
+      "placa": "RYM7A88",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "EMERSON",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103442066",
+      "data_carregamento": "2026-08-22",
+      "placa": "RYM7A88",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "EMERSON",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103449094",
+      "data_carregamento": "2026-08-26",
+      "placa": "RYM7A88",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "EMERSON",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103460160",
+      "data_carregamento": "2026-08-30",
+      "placa": "RYM7A88",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "EMERSON",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103461792",
+      "data_carregamento": "2026-08-30",
+      "placa": "RYM7A88",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "EMERSON",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103390893",
+      "data_carregamento": "2026-08-11",
+      "placa": "RYC7D72",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "RONDINELLI",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103412937",
+      "data_carregamento": "2026-08-15",
+      "placa": "RYC7D72",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "RONDINELLI",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103422828",
+      "data_carregamento": "2026-08-20",
+      "placa": "RYC7D72",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "RONDINELLI",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103435428",
+      "data_carregamento": "2026-08-21",
+      "placa": "RYC7D72",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "RONDINELLI",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103441927",
+      "data_carregamento": "2026-08-24",
+      "placa": "RYC7D72",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "RONDINELLI",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103366419",
+      "data_carregamento": "2026-08-01",
+      "placa": "ROL0B11",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "TELHA SUL",
+      "motorista": "JURANDIR",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103404053",
+      "data_carregamento": "2026-08-12",
+      "placa": "ROL0B11",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 0,
+      "pct_checkin": 0.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.0,
+      "cluster_esp": "Sem check-in e sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "JURANDIR",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103415335",
+      "data_carregamento": "2026-08-18",
+      "placa": "ROL0B11",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 0,
+      "pct_checkin": 0.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.0,
+      "cluster_esp": "Sem check-in e sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "JURANDIR",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103431265",
+      "data_carregamento": "2026-08-21",
+      "placa": "ROL0B11",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "JURANDIR",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103441733",
+      "data_carregamento": "2026-08-25",
+      "placa": "ROL0B11",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "JURANDIR",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103472955",
+      "data_carregamento": "2026-08-31",
+      "placa": "ROL0B11",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "JURANDIR",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103378695",
+      "data_carregamento": "2026-08-05",
+      "placa": "RIF0J97",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ONOFRE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103399373",
+      "data_carregamento": "2026-08-11",
+      "placa": "RIF0J97",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ONOFRE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103401621",
+      "data_carregamento": "2026-08-13",
+      "placa": "RIF0J97",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ONOFRE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103427893",
+      "data_carregamento": "2026-08-20",
+      "placa": "RIF0J97",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ONOFRE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103435365",
+      "data_carregamento": "2026-08-22",
+      "placa": "RIF0J97",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ONOFRE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103453747",
+      "data_carregamento": "2026-08-27",
+      "placa": "RIF0J97",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ONOFRE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103458166",
+      "data_carregamento": "2026-08-28",
+      "placa": "RIF0J97",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ONOFRE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103427894",
+      "data_carregamento": "2026-08-20",
+      "placa": "RID4F06",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "DIEGO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103431264",
+      "data_carregamento": "2026-08-23",
+      "placa": "RID4F06",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "DIEGO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103435803",
+      "data_carregamento": "2026-08-23",
+      "placa": "RID4F06",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 0,
+      "pct_checkin": 0.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem check-in",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "DIEGO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103449164",
+      "data_carregamento": "2026-08-26",
+      "placa": "RID4F06",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "DIEGO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103433099",
+      "data_carregamento": "2026-08-20",
+      "placa": "QFS3J11",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "VELTEC",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103390637",
+      "data_carregamento": "2026-08-11",
+      "placa": "POX8094",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103407647",
+      "data_carregamento": "2026-08-16",
+      "placa": "POX8094",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103409633",
+      "data_carregamento": "2026-08-19",
+      "placa": "POX8094",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103422789",
+      "data_carregamento": "2026-08-19",
+      "placa": "POX8094",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103374419",
+      "data_carregamento": "2026-08-05",
+      "placa": "POM2638",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "HAILTOM",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103389070",
+      "data_carregamento": "2026-08-08",
+      "placa": "POM2638",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "HAILTOM",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103398028",
+      "data_carregamento": "2026-08-11",
+      "placa": "POM2638",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "HAILTOM",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103427859",
+      "data_carregamento": "2026-08-20",
+      "placa": "POM2638",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "HAILTOM",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103453791",
+      "data_carregamento": "2026-08-27",
+      "placa": "POM2638",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "HAILTOM",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103405247",
+      "data_carregamento": "2026-08-14",
+      "placa": "POL4046",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "MEVINIER",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103427778",
+      "data_carregamento": "2026-08-20",
+      "placa": "POL4046",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "MEVINIER",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103459493",
+      "data_carregamento": "2026-08-27",
+      "placa": "POL4046",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem leitura de espelhamento na Origem",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "MEVINIER",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103461903",
+      "data_carregamento": "2026-08-29",
+      "placa": "POL4046",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "MEVINIER",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103383392",
+      "data_carregamento": "2026-08-07",
+      "placa": "POH0491",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "PAULO FELIPE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103401636",
+      "data_carregamento": "2026-08-13",
+      "placa": "POH0491",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "PAULO FELIPE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103415641",
+      "data_carregamento": "2026-08-18",
+      "placa": "POH0491",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "PAULO FELIPE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103435366",
+      "data_carregamento": "2026-08-23",
+      "placa": "POH0491",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "PAULO FELIPE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103453786",
+      "data_carregamento": "2026-08-27",
+      "placa": "POH0491",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "PAULO FELIPE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103367256",
+      "data_carregamento": "2026-08-04",
+      "placa": "PNR9H86",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem leitura de espelhamento na Origem",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "JEFFERSON",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103380918",
+      "data_carregamento": "2026-08-07",
+      "placa": "PNR9H86",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "JEFFERSON",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103390627",
+      "data_carregamento": "2026-08-11",
+      "placa": "PNR9H86",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "JEFFERSON",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103401616",
+      "data_carregamento": "2026-08-13",
+      "placa": "PNR9H86",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "JEFFERSON",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103422829",
+      "data_carregamento": "2026-08-19",
+      "placa": "PNR9H86",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "JEFFERSON",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103431912",
+      "data_carregamento": "2026-08-21",
+      "placa": "PNR9H86",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "JEFFERSON",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103449157",
+      "data_carregamento": "2026-08-26",
+      "placa": "PNR9H86",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem leitura de espelhamento na Origem",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "JEFFERSON",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103367092",
+      "data_carregamento": "2026-08-05",
+      "placa": "PNR8046",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ROBERIO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103376610",
+      "data_carregamento": "2026-08-06",
+      "placa": "PNR8046",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ROBERIO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103385249",
+      "data_carregamento": "2026-08-09",
+      "placa": "PNR8046",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem leitura de espelhamento na Origem",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ROBERIO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103398278",
+      "data_carregamento": "2026-08-12",
+      "placa": "PNR8046",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ROBERIO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103405252",
+      "data_carregamento": "2026-08-14",
+      "placa": "PNR8046",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ROBERIO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103415379",
+      "data_carregamento": "2026-08-17",
+      "placa": "PNR8046",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ROBERIO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103427860",
+      "data_carregamento": "2026-08-20",
+      "placa": "PNR8046",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ROBERIO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103431844",
+      "data_carregamento": "2026-08-21",
+      "placa": "PNR8046",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ROBERIO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103450206",
+      "data_carregamento": "2026-08-26",
+      "placa": "PNR8046",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ROBERIO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103458275",
+      "data_carregamento": "2026-08-28",
+      "placa": "PNR8046",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "ROBERIO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103449210",
+      "data_carregamento": "2026-08-25",
+      "placa": "PMX7E42",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103453748",
+      "data_carregamento": "2026-08-27",
+      "placa": "PMX7E42",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103461909",
+      "data_carregamento": "2026-08-30",
+      "placa": "PMX7E42",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103358247",
+      "data_carregamento": "2026-08-02",
+      "placa": "PMX7D82",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "CLEBIO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103360254",
+      "data_carregamento": "2026-08-03",
+      "placa": "PMX7912",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "BALBINO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103382085",
+      "data_carregamento": "2026-08-06",
+      "placa": "PMX7912",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "BALBINO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103385248",
+      "data_carregamento": "2026-08-09",
+      "placa": "PMX7912",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "BALBINO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103411587",
+      "data_carregamento": "2026-08-14",
+      "placa": "PMX7912",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "BALBINO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103422946",
+      "data_carregamento": "2026-08-19",
+      "placa": "PMX7912",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem leitura de espelhamento na Origem",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "BALBINO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103435431",
+      "data_carregamento": "2026-08-22",
+      "placa": "PMX7912",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "BALBINO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103390889",
+      "data_carregamento": "2026-08-10",
+      "placa": "PMX7552",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "WALLAS",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103398283",
+      "data_carregamento": "2026-08-12",
+      "placa": "PMX7552",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "WALLAS",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103408315",
+      "data_carregamento": "2026-08-14",
+      "placa": "PMX7552",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 0,
+      "pct_checkin": 0.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem check-in",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "WALLAS",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103415377",
+      "data_carregamento": "2026-08-18",
+      "placa": "PMX7552",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 0,
+      "pct_checkin": 0.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.0,
+      "cluster_esp": "Sem check-in e sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "WALLAS",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103459325",
+      "data_carregamento": "2026-08-26",
+      "placa": "PMX7552",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "WALLAS",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103461906",
+      "data_carregamento": "2026-08-29",
+      "placa": "PMX7552",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "WALLAS",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103389068",
+      "data_carregamento": "2026-08-08",
+      "placa": "PMU8E21",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "VELTEC",
+      "transportadora": "PORTARE",
+      "motorista": "CARLOS JOSE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103390941",
+      "data_carregamento": "2026-08-11",
+      "placa": "PMU8E21",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "VELTEC",
+      "transportadora": "PORTARE",
+      "motorista": "CARLOS JOSE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103427762",
+      "data_carregamento": "2026-08-20",
+      "placa": "PMU8E21",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "VELTEC",
+      "transportadora": "PORTARE",
+      "motorista": "CARLOS JOSE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103433897",
+      "data_carregamento": "2026-08-21",
+      "placa": "PMU8E21",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "VELTEC",
+      "transportadora": "PORTARE",
+      "motorista": "CARLOS JOSE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103441875",
+      "data_carregamento": "2026-08-24",
+      "placa": "PMU8E21",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "CARLOS JOSE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103449126",
+      "data_carregamento": "2026-08-26",
+      "placa": "PMU8E21",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "VELTEC-BRAZIL",
+      "transportadora": "PORTARE",
+      "motorista": "CARLOS JOSE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103453800",
+      "data_carregamento": "2026-08-27",
+      "placa": "PMU8E21",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "VELTEC-BRAZIL",
+      "transportadora": "PORTARE",
+      "motorista": "CARLOS JOSE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103461704",
+      "data_carregamento": "2026-08-30",
+      "placa": "PMU8E21",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "VELTEC-BRAZIL",
+      "transportadora": "PORTARE",
+      "motorista": "CARLOS JOSE",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103371775",
+      "data_carregamento": "2026-08-05",
+      "placa": "PMU7G31",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103389069",
+      "data_carregamento": "2026-08-07",
+      "placa": "PMU7G31",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103391000",
+      "data_carregamento": "2026-08-10",
+      "placa": "PMO5I18",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103398211",
+      "data_carregamento": "2026-08-12",
+      "placa": "PMO5I18",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103409634",
+      "data_carregamento": "2026-08-16",
+      "placa": "PMO5I18",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103422788",
+      "data_carregamento": "2026-08-19",
+      "placa": "PMO5I18",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103441879",
+      "data_carregamento": "2026-08-25",
+      "placa": "PMO5I18",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103461950",
+      "data_carregamento": "2026-08-29",
+      "placa": "PMO5I18",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103461595",
+      "data_carregamento": "2026-08-30",
+      "placa": "PMO5I18",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103366108",
+      "data_carregamento": "2026-08-01",
+      "placa": "FWC7C63",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "TELHA SUL",
+      "motorista": "SIDNEY",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103374293",
+      "data_carregamento": "2026-08-05",
+      "placa": "FWC7C63",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "SIDNEY",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103390944",
+      "data_carregamento": "2026-08-10",
+      "placa": "FWC7C63",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "SIDNEY",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103405241",
+      "data_carregamento": "2026-08-14",
+      "placa": "FWC7C63",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "SIDNEY",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103398029",
+      "data_carregamento": "2026-08-15",
+      "placa": "FWC7C63",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "SIDNEY",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103435433",
+      "data_carregamento": "2026-08-23",
+      "placa": "FWC7C63",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "TELHA SUL",
+      "motorista": "SIDNEY",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103441905",
+      "data_carregamento": "2026-08-25",
+      "placa": "FWC7C63",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "TELHA SUL",
+      "motorista": "SIDNEY",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103409635",
+      "data_carregamento": "2026-08-15",
+      "placa": "BAF4G09",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "MORORO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103427827",
+      "data_carregamento": "2026-08-20",
+      "placa": "BAF4G09",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "MORORO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103453649",
+      "data_carregamento": "2026-08-27",
+      "placa": "BAF4G09",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "MORORO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103366158",
+      "data_carregamento": "2026-08-01",
+      "placa": "BAF4G06",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "RAIMUNDO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103441721",
+      "data_carregamento": "2026-08-25",
+      "placa": "BAF4G06",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "RAIMUNDO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103453790",
+      "data_carregamento": "2026-08-27",
+      "placa": "BAF4G06",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem leitura de espelhamento na Origem",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "RAIMUNDO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103461907",
+      "data_carregamento": "2026-08-29",
+      "placa": "BAF4G06",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "PORTARE",
+      "motorista": "RAIMUNDO",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103363336",
+      "data_carregamento": "2026-08-03",
+      "placa": "BAF4G04",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 1,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103378869",
+      "data_carregamento": "2026-08-06",
+      "placa": "BAF4G04",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103398309",
+      "data_carregamento": "2026-08-10",
+      "placa": "BAF4G04",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Espelhado",
+      "is_espelhado": 1,
+      "score_esp": 1.0,
+      "cluster_esp": "Check-in e espelhamento ok",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103401624",
+      "data_carregamento": "2026-08-13",
+      "placa": "BAF4G04",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "MOTORA",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103363369",
+      "data_carregamento": "2026-08-04",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103367096",
+      "data_carregamento": "2026-08-04",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103369889",
+      "data_carregamento": "2026-08-04",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103383154",
+      "data_carregamento": "2026-08-06",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103380881",
+      "data_carregamento": "2026-08-07",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103380915",
+      "data_carregamento": "2026-08-07",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103383077",
+      "data_carregamento": "2026-08-07",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103385289",
+      "data_carregamento": "2026-08-09",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 1,
+      "pct_checkin": 1.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.5,
+      "cluster_esp": "Sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103409688",
+      "data_carregamento": "2026-08-15",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 0,
+      "pct_checkin": 0.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.0,
+      "cluster_esp": "Sem check-in e sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103409687",
+      "data_carregamento": "2026-08-16",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 0,
+      "pct_checkin": 0.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.0,
+      "cluster_esp": "Sem check-in e sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103409719",
+      "data_carregamento": "2026-08-16",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 0,
+      "pct_checkin": 0.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.0,
+      "cluster_esp": "Sem check-in e sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103431263",
+      "data_carregamento": "2026-08-21",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 0,
+      "pct_checkin": 0.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.0,
+      "cluster_esp": "Sem check-in e sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103435467",
+      "data_carregamento": "2026-08-23",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 0,
+      "pct_checkin": 0.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.0,
+      "cluster_esp": "Sem check-in e sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103441829",
+      "data_carregamento": "2026-08-25",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 0,
+      "pct_checkin": 0.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.0,
+      "cluster_esp": "Sem check-in e sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103457907",
+      "data_carregamento": "2026-08-28",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 0,
+      "pct_checkin": 0.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.0,
+      "cluster_esp": "Sem check-in e sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103458302",
+      "data_carregamento": "2026-08-28",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 0,
+      "pct_checkin": 0.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.0,
+      "cluster_esp": "Sem check-in e sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    },
+    {
+      "dt": "6103460109",
+      "data_carregamento": "2026-08-28",
+      "placa": "S/ Placa",
+      "cod_sap": "10006794",
+      "revenda": "DISSOBEL/SOBRAL(CE)",
+      "checkin_antecipado": 0,
+      "checkin_realizado": 0,
+      "pct_checkin": 0.0,
+      "espelhamento": "Nao Espelhado",
+      "is_espelhado": 0,
+      "score_esp": 0.0,
+      "cluster_esp": "Sem check-in e sem espelhamento",
+      "rastreador": "SEM INFORMACAO",
+      "transportadora": "DISSOBEL / Terceira",
+      "motorista": "Não vinculado",
+      "origem": "Outras / Direto",
+      "destino": "DISSOBEL/SOBRAL(CE)",
+      "paradas_maiores_20min": 0,
+      "paradas_justificadas": 0,
+      "checklist_saida": "Não informado",
+      "checklist_retorno": "Não informado",
+      "has_dts_record": false
+    }
+  ],
+  "metas": {
+    "agendamento": 0.9,
+    "checkin_1h": 0.7,
+    "espelhamento": 0.95
+  }
+};
+
+const MIN_VIAGENS_RANKING = 4;
+
+const METAS_PADRAO = {
+  score: 0.80,
+  agendamento: 0.90,
+  checkin_1h: 0.70,
+  espelhamento: 0.95
+};
+
+function carregarMetasAtivas() {
+  try {
+    var salvas = localStorage.getItem('SCOREPUXADA_METAS');
+    if (salvas) {
+      var parsed = JSON.parse(salvas);
+      return {
+        score: parsed.score !== undefined ? Number(parsed.score) : METAS_PADRAO.score,
+        agendamento: parsed.agendamento !== undefined ? Number(parsed.agendamento) : METAS_PADRAO.agendamento,
+        checkin_1h: parsed.checkin_1h !== undefined ? Number(parsed.checkin_1h) : METAS_PADRAO.checkin_1h,
+        espelhamento: parsed.espelhamento !== undefined ? Number(parsed.espelhamento) : METAS_PADRAO.espelhamento
+      };
+    }
+  } catch(e) {}
+  return Object.assign({}, METAS_PADRAO);
+}
+
+const T = {
+  "bg": "#080c14",
+  "plane": "rgba(255,255,255,.04)",
+  "plane-2": "rgba(255,255,255,.02)",
+  "stroke": "rgba(255,255,255,.10)",
+  "ink": "#e8edf6",
+  "ink-2": "#b8c1d1",
+  "muted": "#8a93a5",
+  "acc": "#67e8f9",
+  "acc-2": "#93c5fd",
+  "good": "#6ee7b7",
+  "bad": "#fb7185",
+  "warn": "#fbbf24",
+  "good-bg": "rgba(110,231,183,.14)",
+  "bad-bg": "rgba(251,113,133,.14)",
+  "warn-bg": "rgba(251,191,36,.14)",
+  "track": "rgba(255,255,255,.06)",
+  "grid": "rgba(255,255,255,.055)",
+  "radius": "18px",
+  "bw": "1px",
+  "shadow": "0 18px 50px -12px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3)",
+  "font": "'Inter'",
+  "display": "'Plus Jakarta Sans'",
+  "mono": "'JetBrains Mono'",
+  "c1": "#67e8f9",
+  "c2": "#60a5fa",
+  "c3": "#6ee7b7",
+  "c4": "#fbbf24",
+  "c5": "#c084fc",
+  "on-acc": "#04121a",
+  "on-cat": "#04121a",
+  "on-good": "#04150e"
+};
+const F = "Inter, system-ui, sans-serif";
+
+var APP_STATE = {
+  data: INITIAL_DATA,
+  viagens: INITIAL_DATA.viagens || [],
+  agendamento: INITIAL_DATA.agendamento_summary || {},
+  metas: carregarMetasAtivas(),
+  abaAtiva: 'consolidado',
+  viagensFiltradas: [],
+  colunaOrdenacao: 'data',
+  direcaoOrdenacao: 'desc',
+  paginaAtual: 1,
+  itensPorPagina: 50,
+  chartInstance: null
+};
+
+// Helper: Formata Porcentagem
+function fPct(val, dec) {
+  if (val === undefined || val === null || isNaN(val)) return '0,0%';
+  return (val * 100).toFixed(dec !== undefined ? dec : 1).replace('.', ',') + '%';
+}
+
+// Helper: Formata Data DD/MM/AAAA
+function fData(dtStr) {
+  if (!dtStr) return '-';
+  if (dtStr.includes('-')) {
+    var p = dtStr.split('-');
+    if (p.length === 3) return p[2] + '/' + p[1] + '/' + p[0];
+  }
+  return dtStr;
+}
+
+// Helper: Calcula Motivo da Não Conformidade
+function calcularMotivo(v) {
+  var checkOk = Number(v.checkin_antecipado) === 1;
+  var espOk = Number(v.is_espelhado) === 1;
+  if (checkOk && espOk) return 'Conforme';
+  if (!checkOk && !espOk) return 'Check-in >1h e Espelhamento';
+  if (!checkOk && espOk) return 'Check-in >1h';
+  if (checkOk && !espOk) return 'Espelhamento';
+  return 'Conforme';
+}
+
+/* ==========================================================================
+   MODAL DE AJUSTE DE METAS
+   ========================================================================== */
+function abrirModalMetas() {
+  document.getElementById('inp-meta-score').value = Math.round(APP_STATE.metas.score * 100);
+  document.getElementById('inp-meta-ag').value = Math.round(APP_STATE.metas.agendamento * 100);
+  document.getElementById('inp-meta-checkin').value = Math.round(APP_STATE.metas.checkin_1h * 100);
+  document.getElementById('inp-meta-esp').value = Math.round(APP_STATE.metas.espelhamento * 100);
+  document.getElementById('modal-metas').classList.add('active');
+}
+
+function fecharModalMetas() {
+  document.getElementById('modal-metas').classList.remove('active');
+}
+
+function restaurarMetasPadrao() {
+  document.getElementById('inp-meta-score').value = Math.round(METAS_PADRAO.score * 100);
+  document.getElementById('inp-meta-ag').value = Math.round(METAS_PADRAO.agendamento * 100);
+  document.getElementById('inp-meta-checkin').value = Math.round(METAS_PADRAO.checkin_1h * 100);
+  document.getElementById('inp-meta-esp').value = Math.round(METAS_PADRAO.espelhamento * 100);
+}
+
+function salvarMetasUsuario() {
+  var sScore = Number(document.getElementById('inp-meta-score').value) / 100 || METAS_PADRAO.score;
+  var sAg = Number(document.getElementById('inp-meta-ag').value) / 100 || METAS_PADRAO.agendamento;
+  var sChk = Number(document.getElementById('inp-meta-checkin').value) / 100 || METAS_PADRAO.checkin_1h;
+  var sEsp = Number(document.getElementById('inp-meta-esp').value) / 100 || METAS_PADRAO.espelhamento;
+
+  APP_STATE.metas = {
+    score: sScore,
+    agendamento: sAg,
+    checkin_1h: sChk,
+    espelhamento: sEsp
+  };
+
+  try {
+    localStorage.setItem('SCOREPUXADA_METAS', JSON.stringify(APP_STATE.metas));
+  } catch(e) {}
+
+  fecharModalMetas();
+  renderizarDashboardCompleto(APP_STATE.data);
+}
+
+/* ==========================================================================
+   RENDERIZADORES DINÂMICOS
+   ========================================================================== */
+
+function renderizarDashboardCompleto(dados) {
+  APP_STATE.data = dados;
+  APP_STATE.viagens = dados.viagens || [];
+  APP_STATE.agendamento = dados.agendamento_summary || {};
+
+  // 1. Atualizar Badge Data
+  var badge = document.getElementById('badge-atualizacao');
+  if (badge) {
+    var d = dados.generated_at ? new Date(dados.generated_at) : new Date();
+    var dia = String(d.getDate()).padStart(2, '0');
+    var mes = String(d.getMonth() + 1).padStart(2, '0');
+    var ano = d.getFullYear();
+    var horas = String(d.getHours()).padStart(2, '0');
+    var mins = String(d.getMinutes()).padStart(2, '0');
+    badge.innerText = 'Atualizado em ' + dia + '/' + mes + '/' + ano + ' às ' + horas + ':' + mins;
+  }
+
+  // 2. Badge Total Viagens Tab
+  var totalViagens = APP_STATE.viagens.length;
+  var bTab = document.getElementById('badge-total-trips');
+  if (bTab) bTab.innerText = totalViagens + (totalViagens === 1 ? ' viagem' : ' viagens');
+
+  // 3. Renderizar Hero & KPIs dos 3 Pilares
+  renderizarHeroEKpis();
+
+  // 4. Renderizar Gráfico Diário ECharts
+  renderizarGraficoDiario();
+
+  // 5. Renderizar Rankings de Motoristas, Veículos e Placas Pendentes
+  renderizarRankings();
+
+  // 6. Renderizar Comparação de Transportadoras
+  renderizarComparacaoTransportadoras();
+
+  // 7. Configurar Opções de Filtro da Aba Cobrança
+  popularFiltrosCobranca();
+
+  // 8. Aplicar Filtros da Aba Cobrança
+  aplicarFiltrosCobranca();
+}
+
+function renderizarHeroEKpis() {
+  var total = APP_STATE.viagens.length;
+  var pctAg = APP_STATE.agendamento.pct_agendado || 0;
+  var totalCheckin = APP_STATE.viagens.filter(v => Number(v.checkin_antecipado) === 1).length;
+  var totalEsp = APP_STATE.viagens.filter(v => Number(v.is_espelhado) === 1).length;
+
+  var pctCheckin = total > 0 ? (totalCheckin / total) : 0;
+  var pctEsp = total > 0 ? (totalEsp / total) : 0;
+  var scoreGeral = (pctAg + pctCheckin + pctEsp) / 3;
+
+  var metaScore = APP_STATE.metas.score;
+  var metaAg = APP_STATE.metas.agendamento;
+  var metaChk = APP_STATE.metas.checkin_1h;
+  var metaEsp = APP_STATE.metas.espelhamento;
+
+  // Hero
+  var elHero = document.getElementById('hero-score-geral');
+  if (elHero) elHero.innerText = fPct(scoreGeral);
+
+  var elBadgeMeta = document.getElementById('hero-badge-meta');
+  if (elBadgeMeta) {
+    var isAboveScore = scoreGeral >= metaScore;
+    var diffScore = Math.abs((scoreGeral - metaScore) * 100).toFixed(1).replace('.', ',');
+    elBadgeMeta.innerText = (isAboveScore ? '▲ ' : '▼ ') + diffScore + ' pp vs Meta (' + Math.round(metaScore * 100) + '%)';
+    elBadgeMeta.style.color = isAboveScore ? 'var(--good)' : 'var(--bad)';
+    elBadgeMeta.style.background = isAboveScore ? 'var(--good-bg)' : 'var(--bad-bg)';
+  }
+
+  var elComp = document.getElementById('hero-composicao');
+  if (elComp) elComp.innerText = 'composição: agendamento (' + fPct(pctAg) + '), check-in (' + fPct(pctCheckin) + ') e espelhamento (' + fPct(pctEsp) + ')';
+
+  // KPIs
+  var elAgVal = document.getElementById('kpi-agendamento-val');
+  if (elAgVal) elAgVal.innerText = fPct(pctAg);
+  var elAgDiff = document.getElementById('kpi-agendamento-diff');
+  if (elAgDiff) {
+    var diffAg = ((pctAg - metaAg) * 100).toFixed(1).replace('.', ',');
+    var isUp = pctAg >= metaAg;
+    elAgDiff.innerText = (isUp ? '▲ ' : '▼ ') + Math.abs(parseFloat(diffAg)).toFixed(1).replace('.', ',') + ' pp vs meta (' + Math.round(metaAg * 100) + '%)';
+    elAgDiff.style.color = isUp ? 'var(--good)' : 'var(--bad)';
+  }
+
+  var elChkVal = document.getElementById('kpi-checkin-val');
+  if (elChkVal) elChkVal.innerText = fPct(pctCheckin);
+  var elChkDiff = document.getElementById('kpi-checkin-diff');
+  if (elChkDiff) {
+    var diffChk = ((pctCheckin - metaChk) * 100).toFixed(1).replace('.', ',');
+    var isUpChk = pctCheckin >= metaChk;
+    elChkDiff.innerText = (isUpChk ? '▲ ' : '▼ ') + Math.abs(parseFloat(diffChk)).toFixed(1).replace('.', ',') + ' pp vs meta (' + Math.round(metaChk * 100) + '%)';
+    elChkDiff.style.color = isUpChk ? 'var(--good)' : 'var(--bad)';
+  }
+
+  var elEspVal = document.getElementById('kpi-esp-val');
+  if (elEspVal) elEspVal.innerText = fPct(pctEsp);
+  var elEspDiff = document.getElementById('kpi-esp-diff');
+  if (elEspDiff) {
+    var diffEsp = ((pctEsp - metaEsp) * 100).toFixed(1).replace('.', ',');
+    var isUpEsp = pctEsp >= metaEsp;
+    elEspDiff.innerText = (isUpEsp ? '▲ ' : '▼ ') + Math.abs(parseFloat(diffEsp)).toFixed(1).replace('.', ',') + ' pp vs meta (' + Math.round(metaEsp * 100) + '%)';
+    elEspDiff.style.color = isUpEsp ? 'var(--good)' : 'var(--bad)';
+  }
+
+  var elViagensVal = document.getElementById('kpi-viagens-val');
+  if (elViagensVal) elViagensVal.innerText = total;
+}
+
+function renderizarGraficoDiario() {
+  var diasMap = {};
+  var pctAg = APP_STATE.agendamento.pct_agendado || 0.928;
+  var metaScore = Math.round(APP_STATE.metas.score * 100);
+
+  APP_STATE.viagens.forEach(function(v) {
+    var dt = v.data_carregamento;
+    if (!dt) return;
+    if (!diasMap[dt]) {
+      diasMap[dt] = { total: 0, checkin: 0, esp: 0, naMeta: 0 };
+    }
+    diasMap[dt].total++;
+    if (Number(v.checkin_antecipado) === 1) diasMap[dt].checkin++;
+    if (Number(v.is_espelhado) === 1) diasMap[dt].esp++;
+    if (Number(v.checkin_antecipado) === 1 && Number(v.is_espelhado) === 1) diasMap[dt].naMeta++;
+  });
+
+  var sortedDates = Object.keys(diasMap).sort();
+  var rotulos = [];
+  var viagensData = [];
+  var scoresData = [];
+  var detalhesData = [];
+
+  sortedDates.forEach(function(dt) {
+    var d = diasMap[dt];
+    var parts = dt.split('-');
+    var rotulo = parts.length === 3 ? parts[2] + '/' + parts[1] : dt;
+    rotulos.push(rotulo);
+    viagensData.push(d.total);
+
+    var dayChkPct = d.total > 0 ? (d.checkin / d.total) : 0;
+    var dayEspPct = d.total > 0 ? (d.esp / d.total) : 0;
+    var dayScore = ((pctAg + dayChkPct + dayEspPct) / 3) * 100;
+    scoresData.push(parseFloat(dayScore.toFixed(1)));
+
+    detalhesData.push({
+      total: d.total,
+      naMeta: d.naMeta,
+      pct: d.total > 0 ? (d.naMeta / d.total * 100) : 0,
+      checkin: dayChkPct * 100,
+      esp: dayEspPct * 100
+    });
+  });
+
+  var elChart = document.querySelector('[data-chart="linha"]');
+  if (!elChart) return;
+
+  if (!APP_STATE.chartInstance) {
+    APP_STATE.chartInstance = echarts.init(elChart, null, { renderer: 'svg' });
+    window.addEventListener('resize', function() { if (APP_STATE.chartInstance) APP_STATE.chartInstance.resize(); });
+  }
+
+  var option = {
+    textStyle: { fontFamily: F, color: T['ink-2'] },
+    grid: { left: 46, right: 54, top: 38, bottom: 70, containLabel: false },
+    legend: {
+      show: true, orient: 'horizontal', left: 'center', bottom: 4, itemGap: 36, itemWidth: 18, itemHeight: 10,
+      textStyle: { color: T.ink, fontSize: 11.5, fontFamily: F, padding: [0, 0, 0, 4] },
+      data: ['Viagens do Dia', 'Score de Puxada (%)', 'Meta (' + metaScore + '%)']
+    },
+    tooltip: {
+      trigger: 'axis', confine: true, backgroundColor: T.ink, borderWidth: 0, padding: [11, 14],
+      textStyle: { color: T.bg, fontSize: 12, fontFamily: F },
+      extraCssText: 'border-radius:8px;box-shadow:0 12px 30px rgba(0,0,0,0.5);z-index:99;',
+      axisPointer: { type: 'line', lineStyle: { color: T.muted, type: 'dashed' } },
+      formatter: function(params) {
+        var p0 = params.find(p => p.seriesName === 'Viagens do Dia') || params[0];
+        var idx = p0.dataIndex;
+        var valScore = Number(scoresData[idx] || 0);
+        var valViagens = Number(viagensData[idx] || 0);
+        var isAbove = valScore >= metaScore;
+        var diff = Math.abs(valScore - metaScore).toFixed(1).replace('.', ',');
+        var d = detalhesData[idx] || { total: valViagens, naMeta: 0, pct: 0, checkin: 0, esp: 0 };
+
+        return '<div style="opacity:.65;font-size:11px;margin-bottom:3px">📅 Dia ' + p0.axisValue + '</div>' +
+               '<div style="font-weight:700;font-size:15px;margin:2px 0;color:' + T.bg + '">Score: ' + valScore.toFixed(1).replace('.', ',') + '%</div>' +
+               '<div style="font-size:11.5px;font-weight:600;margin-bottom:7px;color:' + (isAbove ? '#059669' : '#e11d48') + '">' +
+               (isAbove ? '▲' : '▼') + ' ' + diff + '% ' + (isAbove ? 'acima' : 'abaixo') + ' da meta (' + metaScore + '%)</div>' +
+               '<div style="border-top:1px dashed rgba(8,12,20,0.2);padding-top:6px;font-size:11.5px;color:' + T.bg + ';line-height:1.45">' +
+               '<div>• Volume: <b>' + valViagens + (valViagens === 1 ? ' viagem' : ' viagens') + '</b></div>' +
+               '<div>• Atingimento: <b>' + d.naMeta + ' de ' + d.total + '</b> na meta (<b>' + d.pct.toFixed(1).replace('.', ',') + '%</b>)</div>' +
+               '<div>• Check-in: <b>' + d.checkin.toFixed(1).replace('.', ',') + '%</b> | Espelhamento: <b>' + d.esp.toFixed(1).replace('.', ',') + '%</b></div>' +
+               '</div>';
+      }
+    },
+    xAxis: {
+      type: 'category', boundaryGap: true, data: rotulos,
+      axisLine: { lineStyle: { color: T.stroke } },
+      axisTick: { show: true, alignWithLabel: true, lineStyle: { color: T.stroke } },
+      axisLabel: { color: T.muted, fontSize: 9.5, fontFamily: F, margin: 10, interval: 0 }
+    },
+    yAxis: [
+      {
+        type: 'value', name: 'Viagens', nameTextStyle: { color: T.muted, fontSize: 11, fontFamily: F, padding: [0, 0, 6, 0] },
+        min: 0, splitLine: { lineStyle: { color: T.grid, type: 'dashed' } },
+        axisLine: { show: false }, axisTick: { show: false },
+        axisLabel: { color: T.muted, fontSize: 10.5, fontFamily: F, margin: 8 }
+      },
+      {
+        type: 'value', name: 'Score (%)', nameTextStyle: { color: T.muted, fontSize: 11, fontFamily: F, padding: [0, 0, 6, 0] },
+        min: 0, max: 100, interval: 20, splitLine: { show: false },
+        axisLine: { show: false }, axisTick: { show: false },
+        axisLabel: { color: T.muted, fontSize: 10.5, fontFamily: F, margin: 8, formatter: val => val + '%' }
+      }
+    ],
+    series: [
+      {
+        name: 'Viagens do Dia', type: 'bar', yAxisIndex: 0, z: 2, barMaxWidth: 14,
+        itemStyle: { color: 'rgba(103,232,249,0.35)', borderColor: T.acc, borderWidth: 1, borderRadius: [4, 4, 0, 0] },
+        data: viagensData
+      },
+      {
+        name: 'Score de Puxada (%)', type: 'line', yAxisIndex: 1, z: 4, smooth: 0.22, showSymbol: true, symbol: 'circle', symbolSize: 6,
+        lineStyle: { width: 2.4, color: T.acc },
+        itemStyle: { color: T.acc, borderColor: T.acc, borderWidth: 1 },
+        data: scoresData,
+        markLine: {
+          silent: true, symbol: 'none', z: 5,
+          lineStyle: { color: T.warn, type: 'dashed', width: 1.5 },
+          label: { formatter: 'Meta ' + metaScore + '%', color: T.warn, fontSize: 10, fontFamily: F, position: 'insideEndTop', distance: [0, -12], padding: [3, 8], backgroundColor: 'rgba(8,12,20,0.88)', borderRadius: 4 },
+          data: [{ yAxis: metaScore }]
+        }
+      },
+      {
+        name: 'Meta (' + metaScore + '%)', type: 'line', yAxisIndex: 1, data: [], symbol: 'none',
+        lineStyle: { type: 'dashed', color: T.warn, width: 2 }, itemStyle: { color: T.warn }
+      }
+    ]
+  };
+
+  APP_STATE.chartInstance.setOption(option);
+}
+
+function renderizarRankings() {
+  var pctAg = APP_STATE.agendamento.pct_agendado || 0.928;
+  var metaScore = APP_STATE.metas.score;
+  var motoristasMap = {};
+  var veiculosMap = {};
+  var unregMap = {};
+
+  APP_STATE.viagens.forEach(function(v) {
+    var mot = (v.motorista || '').trim();
+    var placa = (v.placa || '').trim().toUpperCase();
+    var isUnreg = mot === 'Não vinculado' || mot === 'Não cadastrado' || mot === 'N/I' || placa === 'S/ PLACA' || v.transportadora === 'A verificar' || v.transportadora.includes('Terceira');
+
+    // Motoristas (Apenas cadastrados)
+    if (!isUnreg && mot) {
+      if (!motoristasMap[mot]) motoristasMap[mot] = { total: 0, checkin: 0, esp: 0, transp: v.transportadora };
+      motoristasMap[mot].total++;
+      if (Number(v.checkin_antecipado) === 1) motoristasMap[mot].checkin++;
+      if (Number(v.is_espelhado) === 1) motoristasMap[mot].esp++;
+    }
+
+    // Veículos (Apenas cadastrados)
+    if (!isUnreg && placa && placa !== 'S/ PLACA') {
+      if (!veiculosMap[placa]) veiculosMap[placa] = { total: 0, checkin: 0, esp: 0, transp: v.transportadora };
+      veiculosMap[placa].total++;
+      if (Number(v.checkin_antecipado) === 1) veiculosMap[placa].checkin++;
+      if (Number(v.is_espelhado) === 1) veiculosMap[placa].esp++;
+    }
+
+    // Placas Não Cadastradas
+    if (isUnreg) {
+      var key = placa || 'S/ Placa';
+      if (!unregMap[key]) unregMap[key] = { total: 0, checkin: 0, esp: 0, transp: 'A verificar' };
+      unregMap[key].total++;
+      if (Number(v.checkin_antecipado) === 1) unregMap[key].checkin++;
+      if (Number(v.is_espelhado) === 1) unregMap[key].esp++;
+    }
+  });
+
+  // 1. Motoristas List (Filtrando pelo volume mínimo de viagens)
+  var motList = Object.keys(motoristasMap).map(function(m) {
+    var d = motoristasMap[m];
+    var cPct = d.checkin / d.total;
+    var ePct = d.esp / d.total;
+    var score = (pctAg + cPct + ePct) / 3;
+    return { nome: m, total: d.total, checkin_pct: cPct, esp_pct: ePct, score: score, transp: d.transp };
+  }).filter(m => m.total >= MIN_VIAGENS_RANKING);
+
+  // Melhores: Score >= metaScore
+  var topMot = motList.filter(m => m.score >= metaScore).sort((a, b) => b.score - a.score || b.total - a.total);
+  // Piores: Score < metaScore
+  var botMot = motList.filter(m => m.score < metaScore).sort((a, b) => a.score - b.score || b.total - a.total);
+
+  // Render Top Motoristas
+  var elTopMot = document.getElementById('ranking-motoristas-top');
+  if (elTopMot) {
+    elTopMot.innerHTML = topMot.slice(0, 5).map(function(m, idx) {
+      var wPct = Math.round(m.score * 100);
+      var viagensTxt = m.total + (m.total === 1 ? ' viagem' : ' viagens');
+      return '<div>' +
+             '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">' +
+             '  <span style="display:flex;align-items:center;gap:9px;color:var(--ink-2)">' +
+             '    <b style="width:19px;height:19px;border-radius:var(--radius);background:var(--plane-2);border:var(--bw) solid var(--stroke);display:grid;place-items:center;font-size:10.5px;color:var(--ink-2)">' + (idx + 1) + '</b>' +
+             '    ' + m.nome + ' (' + viagensTxt + ')' +
+             '  </span>' +
+             '  <b style="color:var(--good);font-variant-numeric:tabular-nums">' + fPct(m.score) + '</b>' +
+             '</div>' +
+             '<div style="height:8px;border-radius:var(--radius);background:var(--track);overflow:hidden">' +
+             '  <div style="height:100%;width:' + wPct + '%;background:var(--acc);border-radius:var(--radius)"></div>' +
+             '</div>' +
+             '</div>';
+    }).join('');
+  }
+
+  // Render Bottom Motoristas
+  var elBotMot = document.getElementById('ranking-motoristas-bottom');
+  if (elBotMot) {
+    elBotMot.innerHTML = botMot.slice(0, 5).map(function(m, idx) {
+      var wPct = Math.round(m.score * 100);
+      var viagensTxt = m.total + (m.total === 1 ? ' viagem' : ' viagens');
+      return '<div>' +
+             '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">' +
+             '  <span style="display:flex;align-items:center;gap:9px;color:var(--ink-2)">' +
+             '    <b style="width:19px;height:19px;border-radius:var(--radius);background:var(--bad-bg);border:var(--bw) solid var(--bad);display:grid;place-items:center;font-size:10.5px;color:var(--bad)">' + (idx + 1) + '</b>' +
+             '    ' + m.nome + ' (' + viagensTxt + ')' +
+             '  </span>' +
+             '  <b style="color:var(--bad);font-variant-numeric:tabular-nums">' + fPct(m.score) + '</b>' +
+             '</div>' +
+             '<div style="height:8px;border-radius:var(--radius);background:var(--track);overflow:hidden">' +
+             '  <div style="height:100%;width:' + wPct + '%;background:var(--bad);border-radius:var(--radius)"></div>' +
+             '</div>' +
+             '</div>';
+    }).join('');
+  }
+
+  // 2. Veículos List (Filtrando pelo volume mínimo de viagens)
+  var veicList = Object.keys(veiculosMap).map(function(p) {
+    var d = veiculosMap[p];
+    var cPct = d.checkin / d.total;
+    var ePct = d.esp / d.total;
+    var score = (pctAg + cPct + ePct) / 3;
+    return { placa: p, total: d.total, checkin_pct: cPct, esp_pct: ePct, score: score, transp: d.transp };
+  }).filter(v => v.total >= MIN_VIAGENS_RANKING);
+
+  // Melhores: Score >= metaScore
+  var topVeic = veicList.filter(v => v.score >= metaScore).sort((a, b) => b.score - a.score || b.total - a.total);
+  // Piores: Score < metaScore
+  var botVeic = veicList.filter(v => v.score < metaScore).sort((a, b) => a.score - b.score || b.total - a.total);
+
+  // Render Top Veículos
+  var elTopVeic = document.getElementById('ranking-veiculos-top');
+  if (elTopVeic) {
+    elTopVeic.innerHTML = topVeic.slice(0, 5).map(function(v, idx) {
+      var wPct = Math.round(v.score * 100);
+      var viagensTxt = v.total + (v.total === 1 ? ' viagem' : ' viagens');
+      return '<div>' +
+             '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">' +
+             '  <span style="display:flex;align-items:center;gap:9px;color:var(--ink-2)">' +
+             '    <b style="width:19px;height:19px;border-radius:var(--radius);background:var(--plane-2);border:var(--bw) solid var(--stroke);display:grid;place-items:center;font-size:10.5px;color:var(--ink-2)">' + (idx + 1) + '</b>' +
+             '    ' + v.placa + ' (' + v.transp + ' · ' + viagensTxt + ')' +
+             '  </span>' +
+             '  <b style="color:var(--good);font-variant-numeric:tabular-nums">' + fPct(v.score) + '</b>' +
+             '</div>' +
+             '<div style="height:8px;border-radius:var(--radius);background:var(--track);overflow:hidden">' +
+             '  <div style="height:100%;width:' + wPct + '%;background:var(--acc);border-radius:var(--radius)"></div>' +
+             '</div>' +
+             '</div>';
+    }).join('');
+  }
+
+  // Render Bottom Veículos
+  var elBotVeic = document.getElementById('ranking-veiculos-bottom');
+  if (elBotVeic) {
+    elBotVeic.innerHTML = botVeic.slice(0, 5).map(function(v, idx) {
+      var wPct = Math.round(v.score * 100);
+      var viagensTxt = v.total + (v.total === 1 ? ' viagem' : ' viagens');
+      return '<div>' +
+             '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">' +
+             '  <span style="display:flex;align-items:center;gap:9px;color:var(--ink-2)">' +
+             '    <b style="width:19px;height:19px;border-radius:var(--radius);background:var(--bad-bg);border:var(--bw) solid var(--bad);display:grid;place-items:center;font-size:10.5px;color:var(--bad)">' + (idx + 1) + '</b>' +
+             '    ' + v.placa + ' (' + v.transp + ' · ' + viagensTxt + ')' +
+             '  </span>' +
+             '  <b style="color:var(--bad);font-variant-numeric:tabular-nums">' + fPct(v.score) + '</b>' +
+             '</div>' +
+             '<div style="height:8px;border-radius:var(--radius);background:var(--track);overflow:hidden">' +
+             '  <div style="height:100%;width:' + wPct + '%;background:var(--bad);border-radius:var(--radius)"></div>' +
+             '</div>' +
+             '</div>';
+    }).join('');
+  }
+
+  // 3. Placas Não Cadastradas Cards
+  var unregList = Object.keys(unregMap).map(function(p) {
+    var d = unregMap[p];
+    var cPct = d.checkin / d.total;
+    var ePct = d.esp / d.total;
+    var score = (pctAg + cPct + ePct) / 3;
+    return { placa: p, total: d.total, checkin_pct: cPct, esp_pct: ePct, score: score, transp: 'A verificar' };
+  }).sort((a, b) => b.total - a.total || b.score - a.score);
+
+  var totalUnregTrips = unregList.reduce((acc, curr) => acc + curr.total, 0);
+  var unregTripsTxt = totalUnregTrips + (totalUnregTrips === 1 ? ' viagem' : ' viagens');
+  var elUnregTitle = document.getElementById('placas-unreg-titulo');
+  if (elUnregTitle) elUnregTitle.innerText = 'Placas Não Cadastradas na Base (' + unregTripsTxt + ')';
+  var elUnregBadge = document.getElementById('badge-unreg-pendentes');
+  if (elUnregBadge) elUnregBadge.innerText = '⚠️ ' + unregList.length + ' Identificadores Pendentes';
+
+  var elGridUnreg = document.getElementById('grid-placas-nao-cadastradas');
+  if (elGridUnreg) {
+    elGridUnreg.innerHTML = unregList.map(function(u) {
+      var scoreColor = u.score >= metaScore ? 'var(--good)' : (u.score >= 0.6 ? 'var(--warn)' : 'var(--bad)');
+      var isSPlaca = u.placa === 'S/ Placa' || u.placa === 'S/ PLACA';
+      var placaStyle = isSPlaca ? 'color:var(--bad);' : 'color:var(--ink);';
+      
+      var chkColor = u.checkin_pct >= APP_STATE.metas.checkin_1h ? 'var(--good)' : (u.checkin_pct > 0 ? 'var(--warn)' : 'var(--bad)');
+      var espColor = u.esp_pct >= APP_STATE.metas.espelhamento ? 'var(--good)' : (u.esp_pct > 0 ? (u.esp_pct >= 0.7 ? 'var(--good)' : 'var(--warn)') : 'var(--bad)');
+      var uViagensTxt = u.total + (u.total === 1 ? ' viagem' : ' viagens');
+
+      return '<div style="background:var(--plane-2);border:var(--bw) solid var(--stroke);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between;">' +
+             '  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
+             '    <span style="display:flex;align-items:center;gap:8px;">' +
+             '      <strong style="' + placaStyle + 'font-size:13.5px;letter-spacing:0.3px;">' + u.placa + '</strong>' +
+             '      <span style="font-size:11px;color:var(--muted);background:var(--plane);border:var(--bw) solid var(--stroke);padding:2px 6px;border-radius:var(--radius);font-weight:600;">' + uViagensTxt + '</span>' +
+             '    </span>' +
+             '    <b style="font-size:13.5px;color:' + scoreColor + ';font-variant-numeric:tabular-nums;">Score: ' + fPct(u.score) + '</b>' +
+             '  </div>' +
+             '  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;border-top:1px dashed var(--stroke);padding-top:10px;text-align:left;">' +
+             '    <div>' +
+             '      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:2px;">Check-in</div>' +
+             '      <div style="font-size:12px;font-weight:700;color:' + chkColor + ';">' + fPct(u.checkin_pct) + '</div>' +
+             '    </div>' +
+             '    <div>' +
+             '      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:2px;">Espelham.</div>' +
+             '      <div style="font-size:12px;font-weight:700;color:' + espColor + ';">' + fPct(u.esp_pct) + '</div>' +
+             '    </div>' +
+             '    <div>' +
+             '      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:2px;">Transp.</div>' +
+             '      <div style="font-size:12px;font-weight:600;color:var(--warn);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">A verificar</div>' +
+             '    </div>' +
+             '  </div>' +
+             '</div>';
+    }).join('');
+  }
+}
+
+function renderizarComparacaoTransportadoras() {
+  var pctAg = APP_STATE.agendamento.pct_agendado || 0.928;
+  var metaScore = APP_STATE.metas.score;
+  var transpMap = {};
+
+  APP_STATE.viagens.forEach(function(v) {
+    var t = (v.transportadora || '').trim();
+    var isUnreg = t === 'A verificar' || t.includes('Terceira') || v.motorista === 'Não vinculado' || v.motorista === 'Não cadastrado' || v.placa === 'S/ Placa';
+    var key = isUnreg ? 'A Verificar — Placas Não Cadastradas' : t;
+
+    if (!transpMap[key]) {
+      transpMap[key] = { total: 0, checkin: 0, esp: 0, isUnreg: isUnreg, nome: key };
+    }
+    transpMap[key].total++;
+    if (Number(v.checkin_antecipado) === 1) transpMap[key].checkin++;
+    if (Number(v.is_espelhado) === 1) transpMap[key].esp++;
+  });
+
+  var transpList = Object.keys(transpMap).map(function(key) {
+    var d = transpMap[key];
+    var cPct = d.checkin / d.total;
+    var ePct = d.esp / d.total;
+    var score = (pctAg + cPct + ePct) / 3;
+    return {
+      key: key,
+      nome: d.nome,
+      total: d.total,
+      checkin_pct: cPct,
+      esp_pct: ePct,
+      ag_pct: pctAg,
+      score: score,
+      isUnreg: d.isUnreg
+    };
+  }).sort((a, b) => b.score - a.score);
+
+  var elList = document.getElementById('lista-comparacao-transportadoras');
+  if (!elList) return;
+
+  var metaPctStr = Math.round(metaScore * 100) + '%';
+
+  elList.innerHTML = transpList.map(function(t, idx) {
+    var wPct = Math.round(t.score * 100);
+    var isNaMeta = t.score >= metaScore;
+    var badgeMeta = isNaMeta 
+      ? '<span style="font-size:11.5px;color:var(--good);background:var(--good-bg);padding:3px 8px;border-radius:var(--radius)">Na Meta (' + metaPctStr + ')</span>'
+      : '<span style="font-size:11.5px;color:var(--bad);background:var(--bad-bg);padding:3px 8px;border-radius:var(--radius)">Abaixo da Meta (' + metaPctStr + ')</span>';
+    
+    var badgeUnreg = t.isUnreg 
+      ? '<span style="font-size:11.5px;color:var(--warn);background:var(--warn-bg);padding:3px 8px;border-radius:var(--radius)">Pendente de Cadastro</span>'
+      : '';
+
+    var barColor = isNaMeta ? 'var(--good)' : (t.score >= 0.7 ? 'var(--acc)' : 'var(--bad)');
+    var chkColor = t.checkin_pct >= APP_STATE.metas.checkin_1h ? 'var(--good)' : (t.checkin_pct >= 0.5 ? 'var(--warn)' : 'var(--bad)');
+    var espColor = t.esp_pct >= APP_STATE.metas.espelhamento ? 'var(--good)' : (t.esp_pct >= 0.7 ? 'var(--warn)' : 'var(--bad)');
+
+    var tripsCountTxt = t.total + (t.total === 1 ? ' viagem' : ' viagens');
+    var titleSuffix = t.isUnreg ? ' (' + tripsCountTxt + ')' : ' (Dedicada · ' + tripsCountTxt + ')';
+
+    return '<div style="background:var(--plane-2);border:var(--bw) solid var(--stroke);border-radius:var(--radius);padding:14px 16px;">' +
+           '  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">' +
+           '    <span style="display:flex;align-items:center;gap:9px;color:var(--ink-2);font-weight:700;font-size:14px;">' +
+           '      <b style="width:20px;height:20px;border-radius:var(--radius);background:var(--plane);border:var(--bw) solid var(--stroke);display:grid;place-items:center;font-size:11px;color:var(--ink-2)">' + (idx + 1) + '</b>' +
+           '      ' + t.nome + titleSuffix +
+           '    </span>' +
+           '    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+           '      ' + badgeUnreg +
+           '      ' + badgeMeta +
+           '      <b style="font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums">Score: ' + fPct(t.score) + '</b>' +
+           '    </div>' +
+           '  </div>' +
+           '  <div style="height:8px;border-radius:var(--radius);background:var(--track);overflow:hidden;margin-bottom:10px;">' +
+           '    <div style="height:100%;width:' + wPct + '%;background:' + barColor + ';border-radius:var(--radius)"></div>' +
+           '  </div>' +
+           '  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;font-size:11.5px;color:var(--muted);border-top:1px dashed var(--stroke);padding-top:8px;">' +
+           '    <span>Agendamento: <strong style="color:var(--good)">' + fPct(t.ag_pct) + '</strong></span>' +
+           '    <span>Check-in &gt; 1h: <strong style="color:' + chkColor + '">' + fPct(t.checkin_pct) + '</strong></span>' +
+           '    <span>Espelhamento: <strong style="color:' + espColor + '">' + fPct(t.esp_pct) + '</strong></span>' +
+           '  </div>' +
+           '</div>';
+  }).join('');
+}
+
+/* ==========================================================================
+   ABA DE COBRANÇA: FILTROS, TABELA E EXPORTAÇÃO
+   ========================================================================== */
+
+function popularFiltrosCobranca() {
+  var selTransp = document.getElementById('filtro-transp');
+  if (!selTransp) return;
+
+  var transportadoras = new Set();
+  var minDate = '9999-99-99';
+  var maxDate = '0000-00-00';
+
+  APP_STATE.viagens.forEach(function(v) {
+    var t = (v.transportadora || '').trim();
+    if (t && !t.includes('Terceira') && t !== 'A verificar' && t !== 'Não cadastrado') {
+      transportadoras.add(t);
+    }
+    if (v.data_carregamento) {
+      if (v.data_carregamento < minDate) minDate = v.data_carregamento;
+      if (v.data_carregamento > maxDate) maxDate = v.data_carregamento;
+    }
+  });
+
+  var html = '<option value="TODAS">Todas as Transportadoras</option>';
+  Array.from(transportadoras).sort().forEach(function(t) {
+    html += '<option value="' + t + '">' + t + ' (Dedicada)</option>';
+  });
+  html += '<option value="A_VERIFICAR">A Verificar (Placas Não Cadastradas)</option>';
+  selTransp.innerHTML = html;
+
+  var inpIni = document.getElementById('filtro-data-inicio');
+  var inpFim = document.getElementById('filtro-data-fim');
+  if (inpIni && minDate !== '9999-99-99') inpIni.value = minDate;
+  if (inpFim && maxDate !== '0000-00-00') inpFim.value = maxDate;
+}
+
+function alternarAba(abaId) {
+  APP_STATE.abaAtiva = abaId;
+  document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content-panel').forEach(p => p.classList.remove('active'));
+
+  if (abaId === 'consolidado') {
+    document.querySelector('.nav-tab-btn:nth-child(1)').classList.add('active');
+    document.getElementById('tab-consolidado').classList.add('active');
+    if (APP_STATE.chartInstance) APP_STATE.chartInstance.resize();
+  } else {
+    document.querySelector('.nav-tab-btn:nth-child(2)').classList.add('active');
+    document.getElementById('tab-cobranca').classList.add('active');
+    aplicarFiltrosCobranca();
+  }
+}
+
+function aplicarFiltrosCobranca() {
+  var transpSel = document.getElementById('filtro-transp') ? document.getElementById('filtro-transp').value : 'TODAS';
+  var falhaSel = document.getElementById('filtro-falha') ? document.getElementById('filtro-falha').value : 'TODOS';
+  var dtInicio = document.getElementById('filtro-data-inicio') ? document.getElementById('filtro-data-inicio').value : '';
+  var dtFim = document.getElementById('filtro-data-fim') ? document.getElementById('filtro-data-fim').value : '';
+  var busca = document.getElementById('filtro-busca') ? document.getElementById('filtro-busca').value.toLowerCase().trim() : '';
+
+  APP_STATE.viagensFiltradas = APP_STATE.viagens.filter(function(v) {
+    var t = (v.transportadora || '').trim();
+    var isUnreg = t === 'A verificar' || t.includes('Terceira') || v.motorista === 'Não vinculado' || v.motorista === 'Não cadastrado' || v.placa === 'S/ Placa';
+
+    // 1. Filtro Transportadora
+    if (transpSel === 'A_VERIFICAR') {
+      if (!isUnreg) return false;
+    } else if (transpSel !== 'TODAS') {
+      if (t !== transpSel) return false;
+    }
+
+    // 2. Filtro Período
+    var dCarreg = v.data_carregamento || '';
+    if (dtInicio && dCarreg < dtInicio) return false;
+    if (dtFim && dCarreg > dtFim) return false;
+
+    // 3. Filtro Indicador com Falha
+    var checkOk = Number(v.checkin_antecipado) === 1;
+    var espOk = Number(v.is_espelhado) === 1;
+    if (falhaSel === 'NAO_CONFORMES' && (checkOk && espOk)) return false;
+    if (falhaSel === 'CHECKIN_FALHA' && checkOk) return false;
+    if (falhaSel === 'ESP_FALHA' && espOk) return false;
+    if (falhaSel === 'AMBOS_FALHA' && (checkOk || espOk)) return false;
+    if (falhaSel === 'CONFORMES' && (!checkOk || !espOk)) return false;
+
+    // 4. Busca Texto (Motorista, Placa, DT, Transportadora)
+    if (busca) {
+      var matchMot = (v.motorista || '').toLowerCase().includes(busca);
+      var matchPlaca = (v.placa || '').toLowerCase().includes(busca);
+      var matchDt = (v.dt || '').toLowerCase().includes(busca);
+      var matchTransp = (v.transportadora || '').toLowerCase().includes(busca);
+      if (!matchMot && !matchPlaca && !matchDt && !matchTransp) return false;
+    }
+
+    return true;
+  });
+
+  atualizarKpisCobranca();
+  executarOrdenacao();
+  APP_STATE.paginaAtual = 1;
+  renderizarTabelaCobranca();
+}
+
+function atualizarKpisCobranca() {
+  var total = APP_STATE.viagensFiltradas.length;
+  var conformes = 0;
+  var checkins = 0;
+  var espelhamentos = 0;
+
+  APP_STATE.viagensFiltradas.forEach(function(v) {
+    var cOk = Number(v.checkin_antecipado) === 1;
+    var eOk = Number(v.is_espelhado) === 1;
+    if (cOk && eOk) conformes++;
+    if (cOk) checkins++;
+    if (eOk) espelhamentos++;
+  });
+
+  var ofensores = total - conformes;
+  var pctConf = total > 0 ? (conformes / total * 100).toFixed(1).replace('.', ',') + '%' : '0%';
+  var pctOfen = total > 0 ? (ofensores / total * 100).toFixed(1).replace('.', ',') + '%' : '0%';
+  var pctCheck = total > 0 ? (checkins / total * 100).toFixed(1).replace('.', ',') + '%' : '0%';
+  var pctEsp = total > 0 ? (espelhamentos / total * 100).toFixed(1).replace('.', ',') + '%' : '0%';
+
+  var elTot = document.getElementById('kpi-total-filtrado');
+  if (elTot) elTot.innerText = total;
+
+  var elConf = document.getElementById('kpi-total-conformes');
+  if (elConf) elConf.innerText = conformes;
+  var elPctConf = document.getElementById('kpi-pct-conformes');
+  if (elPctConf) elPctConf.innerText = pctConf + ' de conformidade';
+
+  var elOfen = document.getElementById('kpi-total-ofensores');
+  if (elOfen) elOfen.innerText = ofensores;
+  var elPctOfen = document.getElementById('kpi-pct-ofensores');
+  if (elPctOfen) elPctOfen.innerText = pctOfen + ' para cobrança';
+
+  var elChk = document.getElementById('kpi-total-checkin');
+  if (elChk) elChk.innerText = checkins;
+  var elPctChk = document.getElementById('kpi-pct-checkin');
+  if (elPctChk) elPctChk.innerText = pctCheck + ' (Meta ' + Math.round(APP_STATE.metas.checkin_1h * 100) + '%)';
+
+  var elEsp = document.getElementById('kpi-total-esp');
+  if (elEsp) elEsp.innerText = espelhamentos;
+  var elPctEsp = document.getElementById('kpi-pct-esp');
+  if (elPctEsp) elPctEsp.innerText = pctEsp + ' (Meta ' + Math.round(APP_STATE.metas.espelhamento * 100) + '%)';
+
+  var elStatus = document.getElementById('lbl-status-registros');
+  if (elStatus) elStatus.innerText = 'Exibindo ' + total + (total === 1 ? ' viagem filtrada' : ' viagens filtradas');
+}
+
+function ordenarTabela(coluna) {
+  if (APP_STATE.colunaOrdenacao === coluna) {
+    APP_STATE.direcaoOrdenacao = APP_STATE.direcaoOrdenacao === 'asc' ? 'desc' : 'asc';
+  } else {
+    APP_STATE.colunaOrdenacao = coluna;
+    APP_STATE.direcaoOrdenacao = 'asc';
+  }
+
+  executarOrdenacao();
+  renderizarTabelaCobranca();
+}
+
+function executarOrdenacao() {
+  var colunas = ['data', 'dt', 'motorista', 'placa', 'transportadora', 'checkin', 'espelhamento', 'motivo'];
+  colunas.forEach(function(col) {
+    var icon = document.getElementById('sort-' + col);
+    var th = icon ? icon.parentElement : null;
+    if (icon && th) {
+      th.classList.remove('active-sort');
+      if (col === APP_STATE.colunaOrdenacao) {
+        th.classList.add('active-sort');
+        icon.innerText = APP_STATE.direcaoOrdenacao === 'asc' ? '▲' : '▼';
+      } else {
+        icon.innerText = '↕';
+      }
+    }
+  });
+
+  var col = APP_STATE.colunaOrdenacao;
+  var dir = APP_STATE.direcaoOrdenacao;
+
+  APP_STATE.viagensFiltradas.sort(function(a, b) {
+    var valA = '';
+    var valB = '';
+
+    if (col === 'data') { valA = a.data_carregamento || ''; valB = b.data_carregamento || ''; }
+    else if (col === 'dt') { valA = a.dt || ''; valB = b.dt || ''; }
+    else if (col === 'motorista') { valA = a.motorista || ''; valB = b.motorista || ''; }
+    else if (col === 'placa') { valA = a.placa || ''; valB = b.placa || ''; }
+    else if (col === 'transportadora') { valA = a.transportadora || ''; valB = b.transportadora || ''; }
+    else if (col === 'checkin') { valA = Number(a.checkin_antecipado); valB = Number(b.checkin_antecipado); }
+    else if (col === 'espelhamento') { valA = Number(a.is_espelhado); valB = Number(b.is_espelhado); }
+    else if (col === 'motivo') { valA = calcularMotivo(a); valB = calcularMotivo(b); }
+
+    if (typeof valA === 'string') {
+      var cmp = valA.localeCompare(valB, 'pt-BR', { numeric: true });
+      return dir === 'asc' ? cmp : -cmp;
+    } else {
+      return dir === 'asc' ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
+    }
+  });
+}
+
+function renderizarTabelaCobranca() {
+  var tbody = document.getElementById('tbody-cobranca');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  var total = APP_STATE.viagensFiltradas.length;
+  if (total === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);">Nenhuma viagem encontrada com os filtros selecionados.</td></tr>';
+    document.getElementById('pagination-info').innerText = '0 de 0 viagens';
+    document.getElementById('page-num-display').innerText = '0 / 0';
+    document.getElementById('btn-prev-page').disabled = true;
+    document.getElementById('btn-next-page').disabled = true;
+    return;
+  }
+
+  var totalPaginas = Math.ceil(total / APP_STATE.itensPorPagina);
+  if (APP_STATE.paginaAtual > totalPaginas) APP_STATE.paginaAtual = totalPaginas;
+  if (APP_STATE.paginaAtual < 1) APP_STATE.paginaAtual = 1;
+
+  var inicio = (APP_STATE.paginaAtual - 1) * APP_STATE.itensPorPagina;
+  var fim = Math.min(inicio + APP_STATE.itensPorPagina, total);
+  var paginaViagens = APP_STATE.viagensFiltradas.slice(inicio, fim);
+
+  paginaViagens.forEach(function(v) {
+    var tr = document.createElement('tr');
+    var checkOk = Number(v.checkin_antecipado) === 1;
+    var espOk = Number(v.is_espelhado) === 1;
+    var isConforme = checkOk && espOk;
+    var motivo = calcularMotivo(v);
+
+    if (!isConforme) {
+      tr.classList.add('row-nao-conforme');
+    }
+
+    var dataFmt = fData(v.data_carregamento);
+
+    // Badges
+    var badgeCheck = checkOk 
+      ? '<span class="badge-tbl good">✓ OK</span>' 
+      : '<span class="badge-tbl bad">✕ Não fez</span>';
+
+    var badgeEsp = espOk 
+      ? '<span class="badge-tbl good">✓ OK</span>' 
+      : '<span class="badge-tbl bad">✕ Não fez</span>';
+
+    var badgeMotivo = '';
+    if (isConforme) {
+      badgeMotivo = '<span class="badge-tbl good">✓ Conforme</span>';
+    } else if (!checkOk && !espOk) {
+      badgeMotivo = '<span class="badge-tbl bad">⚠️ Check-in &gt; 1h e Espelhamento</span>';
+    } else if (!checkOk) {
+      badgeMotivo = '<span class="badge-tbl warn">⚠️ Check-in &gt; 1h</span>';
+    } else {
+      badgeMotivo = '<span class="badge-tbl warn">⚠️ Espelhamento</span>';
+    }
+
+    // Transportadora
+    var transpDisplay = v.transportadora;
+    var isUnreg = transpDisplay === 'A verificar' || transpDisplay.includes('Terceira') || v.motorista === 'Não vinculado' || v.motorista === 'Não cadastrado' || v.placa === 'S/ Placa';
+    if (isUnreg) {
+      transpDisplay = '<span style="color:var(--warn);font-weight:600;">A verificar</span>';
+    }
+
+    // Motorista (Exatamente o texto lido da planilha)
+    var motDisplay = v.motorista || 'Não cadastrado';
+    if (motDisplay === 'Não cadastrado' || motDisplay === 'Não vinculado' || motDisplay === 'N/I') {
+      motDisplay = '<span style="color:var(--muted);font-style:italic;">Não cadastrado</span>';
+    }
+
+    tr.innerHTML = `
+      <td><strong style="color:var(--ink);">${dataFmt}</strong></td>
+      <td><span style="font-family:var(--mono),monospace;font-size:11.5px;color:var(--acc);">${v.dt}</span></td>
+      <td><strong>${motDisplay}</strong></td>
+      <td><span style="font-family:var(--mono),monospace;font-weight:700;letter-spacing:0.5px;">${v.placa}</span></td>
+      <td>${transpDisplay}</td>
+      <td>${badgeCheck}</td>
+      <td>${badgeEsp}</td>
+      <td>${badgeMotivo}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('pagination-info').innerText = 'Mostrando ' + (inicio + 1) + '-' + fim + ' de ' + total + (total === 1 ? ' viagem' : ' viagens');
+  document.getElementById('page-num-display').innerText = APP_STATE.paginaAtual + ' / ' + totalPaginas;
+  document.getElementById('btn-prev-page').disabled = APP_STATE.paginaAtual <= 1;
+  document.getElementById('btn-next-page').disabled = APP_STATE.paginaAtual >= totalPaginas;
+}
+
+function mudarPagina(delta) {
+  APP_STATE.paginaAtual += delta;
+  renderizarTabelaCobranca();
+}
+
+function limparFiltrosCobranca() {
+  if (document.getElementById('filtro-transp')) document.getElementById('filtro-transp').value = 'TODAS';
+  if (document.getElementById('filtro-falha')) document.getElementById('filtro-falha').value = 'TODOS';
+  popularFiltrosCobranca();
+  if (document.getElementById('filtro-busca')) document.getElementById('filtro-busca').value = '';
+  APP_STATE.colunaOrdenacao = 'data';
+  APP_STATE.direcaoOrdenacao = 'desc';
+  aplicarFiltrosCobranca();
+}
+
+function exportarCobrancaCSV() {
+  if (!APP_STATE.viagensFiltradas || APP_STATE.viagensFiltradas.length === 0) {
+    alert('Nenhuma viagem filtrada para exportação.');
+    return;
+  }
+
+  var headers = ['Data', 'DT_FO', 'Motorista', 'Placa', 'Transportadora', 'Checkin_Maior_1h', 'Espelhamento', 'Motivo_Nao_Conformidade', 'Status_Geral'];
+  var linhas = [];
+  linhas.push(headers.join(';'));
+
+  APP_STATE.viagensFiltradas.forEach(function(v) {
+    var checkOk = Number(v.checkin_antecipado) === 1 ? 'OK' : 'Não Fez';
+    var espOk = Number(v.is_espelhado) === 1 ? 'OK' : 'Não Fez';
+    var motivo = calcularMotivo(v);
+    var status = (Number(v.checkin_antecipado) === 1 && Number(v.is_espelhado) === 1) ? 'CONFORME' : 'NÃO CONFORME';
+    var isUnreg = v.transportadora === 'A verificar' || v.transportadora.includes('Terceira') || v.motorista === 'Não vinculado' || v.motorista === 'Não cadastrado' || v.placa === 'S/ Placa';
+    var transp = isUnreg ? 'A verificar' : v.transportadora;
+
+    var linha = [
+      v.data_carregamento,
+      v.dt,
+      '"' + (v.motorista || '').replace(/"/g, '""') + '"',
+      v.placa,
+      '"' + transp.replace(/"/g, '""') + '"',
+      checkOk,
+      espOk,
+      '"' + motivo.replace(/"/g, '""') + '"',
+      status
+    ];
+    linhas.push(linha.join(';'));
+  });
+
+  var csvContent = '\uFEFF' + linhas.join('\r\n');
+  var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', 'Detalhamento_Cobranca_ScorePuxada_' + new Date().toISOString().slice(0,10) + '.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Tentativa de carregar dados: 1º da API Google Drive (/api/data), 2º de data.json, 3º INITIAL_DATA
+async function carregarDadosETocarDashboard(mostrarAviso) {
+  var btnSync = document.getElementById('btn-sync-drive');
+  if (btnSync && mostrarAviso) {
+    btnSync.innerText = '🔄 Sincronizando...';
+    btnSync.style.opacity = '0.7';
+  }
+
+  try {
+    var resApi = await fetch('/api/data?t=' + Date.now());
+    if (resApi.ok) {
+      var liveData = await resApi.json();
+      renderizarDashboardCompleto(liveData);
+      if (btnSync && mostrarAviso) {
+        btnSync.innerText = '✓ Sincronizado!';
+        setTimeout(() => { btnSync.innerText = '🔄 Sincronizar Drive'; btnSync.style.opacity = '1'; }, 2000);
+      }
+      return;
+    }
+  } catch (e) {
+    console.log('API /api/data indisponível, buscando arquivo local...');
+  }
+
+  try {
+    var res = await fetch('data.json?t=' + Date.now());
+    if (res.ok) {
+      var fileData = await res.json();
+      renderizarDashboardCompleto(fileData);
+      if (btnSync && mostrarAviso) {
+        btnSync.innerText = '✓ Atualizado!';
+        setTimeout(() => { btnSync.innerText = '🔄 Sincronizar Drive'; btnSync.style.opacity = '1'; }, 2000);
+      }
+      return;
+    }
+  } catch (e) {
+    console.log('Ambiente offline/file, utilizando base carregada.');
+  }
+
+  renderizarDashboardCompleto(INITIAL_DATA);
+  if (btnSync && mostrarAviso) {
+    btnSync.innerText = '✓ Base Carregada';
+    setTimeout(() => { btnSync.innerText = '🔄 Sincronizar Drive'; btnSync.style.opacity = '1'; }, 2000);
+  }
+}
+
+function sincronizarComDrive() {
+  carregarDadosETocarDashboard(true);
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => carregarDadosETocarDashboard(false));
+carregarDadosETocarDashboard(false);
+
+</script>
+</body>
+</html>
