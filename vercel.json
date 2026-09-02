@@ -1,14 +1,11 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "api/data.py", "use": "@vercel/python" },
-    { "src": "index.html", "use": "@vercel/static" },
-    { "src": "terminal.html", "use": "@vercel/static" },
-    { "src": "data.json", "use": "@vercel/static" }
-  ],
-  "routes": [
-    { "src": "/api/data", "dest": "api/data.py" },
-    { "src": "/", "dest": "index.html" },
-    { "src": "/(.*)", "dest": "/$1" }
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    }
   ]
 }
