@@ -1,0 +1,12 @@
+{
+  "name": "scorepuxada",
+  "version": "1.0.0",
+  "description": "Dashboard Score de Puxada com sincronização automática do Google Drive",
+  "main": "api/data.js",
+  "scripts": {
+    "start": "node api/data.js"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}
