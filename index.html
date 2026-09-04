@@ -1,76 +1,16 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Score de Puxada · Consolidado & Detalhamento</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=JetBrains+Mono:wght@400;500;700&family=Archivo:wght@400;600;800&family=Source+Sans+3:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Syne:wght@400;500;600;700;800&family=Unbounded:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <style>
-/* ---- KIT: Aura · tokens (camada 1) ---- */
-:root {
-  --bg: #080c14;
-  --plane: rgba(255,255,255,.04);
-  --plane-2: rgba(255,255,255,.02);
-  --stroke: rgba(255,255,255,.10);
-  --ink: #e8edf6;
-  --ink-2: #b8c1d1;
-  --muted: #8a93a5;
-  --acc: #67e8f9;
-  --acc-2: #93c5fd;
-  --good: #6ee7b7;
-  --bad: #fb7185;
-  --warn: #fbbf24;
-  --good-bg: rgba(110,231,183,.14);
-  --bad-bg: rgba(251,113,133,.14);
-  --warn-bg: rgba(251,191,36,.14);
-  --track: rgba(255,255,255,.06);
-  --grid: rgba(255,255,255,.055);
-  --radius: 18px;
-  --bw: 1px;
-  --shadow: 0 18px 50px -12px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
-  --font: 'Inter';
-  --display: 'Plus Jakarta Sans';
-  --mono: 'JetBrains Mono';
-  --c1: #67e8f9;
-  --c2: #60a5fa;
-  --c3: #6ee7b7;
-  --c4: #fbbf24;
-  --c5: #c084fc;
-  --on-acc: #04121a;
-  --on-cat: #04121a;
-  --on-good: #04150e;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  background: var(--bg); color: var(--ink);
-  font-family: Inter, system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  padding: 28px;
-}
-.app { max-width: 1420px; margin: 0 auto; }
-.topo { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 22px; flex-wrap: wrap; }
-.marca h1 { font-family: var(--display), system-ui, sans-serif; font-size: 21px; font-weight: 700; letter-spacing: -.3px; }
-.periodo { display: inline-flex; align-items: center; gap: 8px; padding: 9px 15px; border: var(--bw) solid var(--stroke);
-  border-radius: var(--radius); background: var(--plane); font-size: 13px; font-weight: 600; color: var(--ink); box-shadow: var(--shadow); font-variant-numeric: tabular-nums; }
-
-/* ---- LAYOUT: Clássico (camada 3) ---- */
-.grade { display: grid; grid-template-columns: repeat(12, 1fr); gap: 18px; }
-.grade > div { min-width: 0; display: flex; flex-direction: column; }
-.grade > div > * { flex: 1; }
-.grade section { box-sizing: border-box; }
-@media (max-width: 900px) { .grade > div { grid-column: span 12 !important; } }
-
-/* ---- assinatura glass: fio de luz + hover ---- */
-.grade section { position: relative; transition: transform .2s ease; }
-.grade section::before { content: ''; position: absolute; left: 16px; right: 16px; top: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--acc), transparent); opacity: .32; pointer-events: none; transition: opacity .2s ease; }
-.grade section:hover { transform: translateY(-2px); }
-.grade section:hover::before { opacity: .6; }
-@media (prefers-reduced-motion: reduce) { .grade section, .grade section::before { transition: none; } .grade section:hover { transform: none; } }
-
-/* ---- TABS NAVIGATION ---- */
+/* ---- ESTILOS ESPECÍFICOS DO DASHBOARD COM 3 ABAS ---- */
 .nav-tabs {
   display: flex;
   gap: 10px;
@@ -121,8 +61,6 @@ body {
 .tab-content-panel.active {
   display: block;
 }
-
-/* ---- ABA COBRANÇA ---- */
 .cobranca-container {
   display: flex;
   flex-direction: column;
@@ -182,15 +120,6 @@ body {
   background: #080c14;
   color: #e8edf6;
 }
-.filter-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  border-top: 1px dashed var(--stroke);
-  padding-top: 14px;
-}
 .btn-action {
   display: inline-flex;
   align-items: center;
@@ -220,8 +149,6 @@ body {
   color: #fff;
   box-shadow: 0 0 14px rgba(103,232,249,.25);
 }
-
-/* KPI Summary Cards inside Cobrança */
 .cobranca-kpis {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -252,138 +179,114 @@ body {
   font-weight: 600;
   margin-top: 4px;
 }
-
-/* Table Card */
 .table-card {
   background: var(--plane);
   border: var(--bw) solid var(--stroke);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  overflow: hidden;
+  padding: 20px 22px;
   display: flex;
   flex-direction: column;
-  position: relative;
-}
-.table-card::before {
-  content: ''; position: absolute; left: 16px; right: 16px; top: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--acc), transparent);
-  opacity: .32; pointer-events: none;
+  gap: 14px;
 }
 .table-header-info {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: var(--bw) solid var(--stroke);
-  background: var(--plane-2);
-  flex-wrap: wrap;
   gap: 12px;
+  flex-wrap: wrap;
 }
 .table-responsive {
   width: 100%;
   overflow-x: auto;
-  max-height: 560px;
 }
 .tabela-cobranca {
   width: 100%;
   border-collapse: collapse;
   font-size: 12.5px;
-  text-align: left;
-  white-space: nowrap;
 }
 .tabela-cobranca th {
-  background: #080c14;
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--plane-2);
   color: var(--muted);
   font-weight: 600;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  padding: 12px 14px;
+  font-size: 11.5px;
   border-bottom: var(--bw) solid var(--stroke);
-  position: sticky;
-  top: 0;
-  z-index: 10;
   cursor: pointer;
   user-select: none;
-  transition: color .2s ease;
+  white-space: nowrap;
 }
 .tabela-cobranca th:hover {
   color: var(--acc);
 }
-.tabela-cobranca th .sort-icon {
-  font-size: 10px;
-  margin-left: 4px;
-  opacity: .4;
-  display: inline-block;
-}
 .tabela-cobranca th.active-sort {
   color: var(--acc);
 }
-.tabela-cobranca th.active-sort .sort-icon {
-  opacity: 1;
-  color: var(--acc);
-}
 .tabela-cobranca td {
-  padding: 10px 14px;
-  border-bottom: 1px solid rgba(255,255,255,.04);
+  padding: 11px 12px;
+  border-bottom: var(--bw) solid var(--stroke);
   color: var(--ink);
-  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
-.tabela-cobranca tbody tr {
-  transition: background .15s ease;
+.tabela-cobranca tr:hover td {
+  background: rgba(255,255,255,.02);
 }
-.tabela-cobranca tbody tr:hover {
-  background: rgba(103,232,249,.04);
-}
-.tabela-cobranca tbody tr.row-nao-conforme {
-  background: rgba(251,113,133,.02);
-}
-.tabela-cobranca tbody tr.row-nao-conforme:hover {
-  background: rgba(251,113,133,.06);
-}
-
-/* Badges in table */
-.badge-tbl {
+.badge-status {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   padding: 3px 8px;
-  border-radius: 8px;
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: .2px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
 }
-.badge-tbl.good {
+.badge-status.ok {
   background: var(--good-bg);
   color: var(--good);
-  border: 1px solid rgba(110,231,183,.3);
 }
-.badge-tbl.bad {
+.badge-status.fail {
   background: var(--bad-bg);
   color: var(--bad);
-  border: 1px solid rgba(251,113,133,.3);
 }
-.badge-tbl.warn {
+.badge-status.warn {
   background: var(--warn-bg);
   color: var(--warn);
-  border: 1px solid rgba(251,191,36,.3);
 }
-.badge-tbl.neutral {
-  background: var(--plane);
-  color: var(--ink-2);
-  border: var(--bw) solid var(--stroke);
+.badge-motivo {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-motivo.conforme {
+  background: var(--good-bg);
+  color: var(--good);
+}
+.badge-motivo.checkin {
+  background: var(--bad-bg);
+  color: var(--bad);
+}
+.badge-motivo.esp {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+.badge-motivo.ambos {
+  background: rgba(251,113,133,.22);
+  color: #fda4af;
+  border: 1px solid rgba(251,113,133,.3);
 }
 .table-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 18px;
+  gap: 12px;
+  padding-top: 12px;
   border-top: var(--bw) solid var(--stroke);
-  background: var(--plane-2);
   font-size: 12px;
   color: var(--muted);
   flex-wrap: wrap;
-  gap: 10px;
 }
 .pagination-controls {
   display: flex;
@@ -391,35 +294,56 @@ body {
   gap: 8px;
 }
 .page-btn {
-  background: var(--plane);
+  background: var(--plane-2);
   border: var(--bw) solid var(--stroke);
-  border-radius: 6px;
   color: var(--ink);
-  padding: 4px 10px;
+  padding: 6px 12px;
+  border-radius: 6px;
   font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all .15s ease;
-  font-family: inherit;
-}
-.page-btn:hover:not(:disabled) {
-  border-color: var(--acc);
-  color: var(--acc);
 }
 .page-btn:disabled {
-  opacity: .35;
+  opacity: .4;
   cursor: not-allowed;
 }
-
-/* Modal de Metas */
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: all .2s ease;
+}
+.ranking-item:hover {
+  background: var(--plane-2);
+}
+.ranking-pos {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+.ranking-pos.top {
+  background: var(--good-bg);
+  color: var(--good);
+}
+.ranking-pos.bot {
+  background: var(--bad-bg);
+  color: var(--bad);
+}
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(4, 6, 12, 0.78);
-  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,.7);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
   padding: 20px;
 }
 .modal-overlay.active {
@@ -429,51 +353,39 @@ body {
   background: #0d131f;
   border: var(--bw) solid var(--stroke);
   border-radius: var(--radius);
-  box-shadow: 0 24px 60px rgba(0,0,0,0.75);
-  width: 100%;
-  max-width: 490px;
+  box-shadow: 0 20px 40px rgba(0,0,0,.5);
   padding: 24px;
+  max-width: 460px;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  position: relative;
-}
-.modal-card::before {
-  content: ''; position: absolute; left: 20px; right: 20px; top: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--acc), transparent);
-  opacity: .5; pointer-events: none;
+  gap: 16px;
 }
 .meta-input-group {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  background: var(--plane-2);
+  background: var(--plane);
+  padding: 10px 14px;
+  border-radius: 8px;
   border: var(--bw) solid var(--stroke);
-  border-radius: 12px;
-  padding: 12px 16px;
 }
 .meta-input-field {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 .meta-input-field input {
-  width: 72px;
-  background: var(--plane);
+  width: 60px;
+  background: var(--plane-2);
   border: var(--bw) solid var(--stroke);
-  border-radius: 8px;
-  padding: 7px 10px;
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: var(--ink);
   font-size: 14px;
   font-weight: 700;
-  color: var(--ink);
   text-align: right;
   outline: none;
-  font-family: inherit;
-}
-.meta-input-field input:focus {
-  border-color: var(--acc);
-  box-shadow: 0 0 0 2px rgba(103,232,249,.15);
 }
 </style>
 </head>
@@ -494,7 +406,7 @@ body {
       </div>
     </div>
 
-    <!-- NAVEGAÇÃO ENTRE ABAS -->
+    <!-- NAVEGAÇÃO ENTRE 3 ABAS -->
     <div class="nav-tabs">
       <button class="nav-tab-btn active" onclick="alternarAba('consolidado')">
         <span>📊 Visão Consolidada</span>
@@ -502,6 +414,10 @@ body {
       <button class="nav-tab-btn" onclick="alternarAba('cobranca')">
         <span>📋 Detalhamento de Cobrança</span>
         <span class="nav-tab-badge" id="badge-total-trips">0 viagens</span>
+      </button>
+      <button class="nav-tab-btn" onclick="alternarAba('dts')">
+        <span>🚚 DT's</span>
+        <span class="nav-tab-badge" id="badge-total-dts">0 DT's (viagens)</span>
       </button>
     </div>
 
@@ -558,114 +474,93 @@ body {
                 <div id="chart-sub-label" style="font-size:12px;color:var(--muted);margin-top:3px">visão diária contínua por dia de carregamento</div>
               </div>
             </div>
-            <div data-chart="linha" style="height:350px; width:100%;"></div>
+            <div id="chart-evolucao-diaria" style="width:100%;height:320px;"></div>
           </section>
         </div>
 
-        <!-- RANKING DE MOTORISTAS POR SCORE -->
+        <!-- RANKINGS: MOTORISTAS & VEÍCULOS -->
+        <div style="grid-column: span 6">
+          <section style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:12px">
+              <div>
+                <b style="font-size:14px;font-weight:600;color:var(--ink)">Ranking de Motoristas</b>
+                <div id="subtitulo-ranking-motoristas" style="font-size:12px;color:var(--muted);margin-top:3px">aderência ao score de puxada por condutor (mínimo de 4 viagens)</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--good);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">▲ Destaques / Aderentes</div>
+                <div id="ranking-motoristas-top" style="display:flex;flex-direction:column;gap:6px;"></div>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--bad);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">▼ Pontos de Atenção</div>
+                <div id="ranking-motoristas-bot" style="display:flex;flex-direction:column;gap:6px;"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div style="grid-column: span 6">
+          <section style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:12px">
+              <div>
+                <b style="font-size:14px;font-weight:600;color:var(--ink)">Ranking de Veículos / Placas</b>
+                <div id="subtitulo-ranking-veiculos" style="font-size:12px;color:var(--muted);margin-top:3px">aderência por placa vinculada (mínimo de 4 viagens)</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--good);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">▲ Destaques / Aderentes</div>
+                <div id="ranking-veiculos-top" style="display:flex;flex-direction:column;gap:6px;"></div>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--bad);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">▼ Pontos de Atenção</div>
+                <div id="ranking-veiculos-bot" style="display:flex;flex-direction:column;gap:6px;"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- PLACAS NÃO CADASTRADAS -->
+        <div style="grid-column: span 12">
+          <section style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:12px">
+              <div>
+                <b style="font-size:14px;font-weight:600;color:var(--ink)">Placas Pendentes de Cadastro / Não Vinculadas</b>
+                <div style="font-size:12px;color:var(--muted);margin-top:3px">veículos que realizaram viagens mas não constam na planilha de motoristas ativos</div>
+              </div>
+              <span id="count-placas-unreg" class="nav-tab-badge">0</span>
+            </div>
+            <div id="lista-placas-unreg" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:10px;"></div>
+          </section>
+        </div>
+
+        <!-- COMPARATIVO POR TRANSPORTADORA -->
         <div style="grid-column: span 12">
           <section style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;">
             <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px">
               <div>
-                <b style="font-size:14px;font-weight:600;color:var(--ink)">Ranking de Motoristas por Score</b>
-                <div id="subtitulo-ranking-motoristas" style="font-size:12px;color:var(--muted);margin-top:3px">maiores e menores aderências ao score de puxada · mínimo de 4 viagens no período</div>
-              </div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;">
-              <!-- MELHORES MOTORISTAS -->
-              <div>
-                <div id="titulo-ranking-mot-top" style="font-size:12px;font-weight:700;color:var(--good);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px">
-                  ⭐ Melhores Motoristas (Acima da Meta)
-                </div>
-                <div id="ranking-motoristas-top" style="display:flex;flex-direction:column;gap:13px"></div>
-              </div>
-
-              <!-- PIORES MOTORISTAS -->
-              <div>
-                <div id="titulo-ranking-mot-bottom" style="font-size:12px;font-weight:700;color:var(--bad);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px">
-                  ⚠️ Piores Motoristas (Menor Aderência / Cobrança)
-                </div>
-                <div id="ranking-motoristas-bottom" style="display:flex;flex-direction:column;gap:13px"></div>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <!-- RANKING DE VEÍCULOS (POR PLACA) -->
-        <div style="grid-column: span 12">
-          <section style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;">
-            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px">
-              <div>
-                <b style="font-size:14px;font-weight:600;color:var(--ink)">Ranking de Veículos por Placa</b>
-                <div id="subtitulo-ranking-veiculos" style="font-size:12px;color:var(--muted);margin-top:3px">aderência ao score de puxada por placa de veículo · mínimo de 4 viagens no período</div>
-              </div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;">
-              <!-- MELHORES VEÍCULOS -->
-              <div>
-                <div id="titulo-ranking-veic-top" style="font-size:12px;font-weight:700;color:var(--good);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px">
-                  🚛 Melhores Veículos (Acima da Meta)
-                </div>
-                <div id="ranking-veiculos-top" style="display:flex;flex-direction:column;gap:13px"></div>
-              </div>
-
-              <!-- PIORES VEÍCULOS -->
-              <div>
-                <div id="titulo-ranking-veic-bottom" style="font-size:12px;font-weight:700;color:var(--bad);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px">
-                  ⚠️ Piores Veículos (Menor Aderência / Cobrança)
-                </div>
-                <div id="ranking-veiculos-bottom" style="display:flex;flex-direction:column;gap:13px"></div>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <!-- PLACAS NÃO CADASTRADAS NA BASE -->
-        <div style="grid-column: span 12">
-          <section style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
-              <div>
-                <b id="placas-unreg-titulo" style="font-size:14px;font-weight:600;color:var(--ink)">Placas Não Cadastradas na Base</b>
-                <div style="font-size:12px;color:var(--muted);margin-top:3px">veículos presentes nas viagens sem cadastro formal em MOTORISTAS</div>
-              </div>
-              <span id="badge-unreg-pendentes" style="font-size:11.5px;color:var(--warn);background:var(--warn-bg);padding:4px 10px;border-radius:var(--radius);font-weight:600;white-space:nowrap;">
-                ⚠️ Identificadores Pendentes
-              </span>
-            </div>
-
-            <div id="grid-placas-nao-cadastradas" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;"></div>
-          </section>
-        </div>
-
-        <!-- COMPARAÇÃO ENTRE TRANSPORTADORAS -->
-        <div style="grid-column: span 12">
-          <section style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;">
-            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px">
-              <div>
-                <b style="font-size:14px;font-weight:600;color:var(--ink)">Comparação entre Transportadoras</b>
+                <b style="font-size:14px;font-weight:600;color:var(--ink)">Desempenho por Transportadora</b>
                 <div style="font-size:12px;color:var(--muted);margin-top:3px">aderência ao score de puxada e quebra dos 3 pilares para cobrança</div>
               </div>
             </div>
-
-            <div id="lista-comparacao-transportadoras" style="display:flex;flex-direction:column;gap:14px;"></div>
+            <div id="lista-comparacao-transportadoras" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:14px;"></div>
           </section>
         </div>
 
       </div>
     </div>
 
-    <!-- ABA 2: DETALHAMENTO DE COBRANÇA -->
+    <!-- ABA 2: DETALHAMENTO DE COBRANÇA (AUDITORIA DE VIAGENS) -->
     <div id="tab-cobranca" class="tab-content-panel">
       <div class="cobranca-container">
-        
-        <!-- CARDS DE RESUMO DO FILTRO ATIVO -->
+
+        <!-- KPIS DE COBRANÇA -->
         <div class="cobranca-kpis">
           <div class="cobranca-kpi-card">
             <div class="cobranca-kpi-label">Viagens Filtradas</div>
             <div class="cobranca-kpi-val" id="kpi-total-filtrado">0</div>
-            <div class="cobranca-kpi-sub" id="kpi-sub-total-filtrado" style="color:var(--muted)">no período</div>
+            <div class="cobranca-kpi-sub" style="color:var(--muted)">no período</div>
           </div>
           <div class="cobranca-kpi-card">
             <div class="cobranca-kpi-label">Viagens 100% Conformes</div>
@@ -678,7 +573,7 @@ body {
             <div class="cobranca-kpi-sub" id="kpi-pct-ofensores" style="color:var(--bad)">0% para cobrança</div>
           </div>
           <div class="cobranca-kpi-card">
-            <div class="cobranca-kpi-label">Check-in > 1h Realizado</div>
+            <div class="cobranca-kpi-label">Check-in &gt; 1h Realizado</div>
             <div class="cobranca-kpi-val" id="kpi-total-checkin">0</div>
             <div class="cobranca-kpi-sub" id="kpi-pct-checkin" style="color:var(--bad)">0% (Meta 70%)</div>
           </div>
@@ -689,7 +584,7 @@ body {
           </div>
         </div>
 
-        <!-- FILTROS NO TOPO DA ABA DE COBRANÇA -->
+        <!-- FILTROS DE COBRANÇA -->
         <div class="filter-card">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
             <div>
@@ -705,9 +600,7 @@ body {
           <div class="filter-grid">
             <div class="filter-field">
               <label class="filter-label">🏢 Transportadora</label>
-              <select id="filtro-transp" class="filter-select" onchange="aplicarFiltrosCobranca()">
-                <option value="TODAS">Todas as Transportadoras</option>
-              </select>
+              <select id="filtro-transp" class="filter-select" onchange="aplicarFiltrosCobranca()"></select>
             </div>
 
             <div class="filter-field">
@@ -734,7 +627,7 @@ body {
 
             <div class="filter-field" style="grid-column: span 2;">
               <label class="filter-label">🔍 Busca Rápida (Motorista / Placa / DT)</label>
-              <input type="text" id="filtro-busca" class="filter-input" placeholder="Ex: Nome do motorista, placa, DT..." oninput="aplicarFiltrosCobranca()">
+              <input type="text" id="filtro-busca" class="filter-input" placeholder="Ex: Diego, RID4F06, 6103468725..." oninput="aplicarFiltrosCobranca()">
             </div>
           </div>
         </div>
@@ -744,7 +637,7 @@ body {
           <div class="table-header-info">
             <div>
               <b style="font-size:13.5px;font-weight:600;color:var(--ink)">Evidências de Viagens por DT</b>
-              <span style="font-size:12px;color:var(--muted);margin-left:8px;" id="lbl-status-registros">Exibindo viagens</span>
+              <span style="font-size:12px;color:var(--muted);margin-left:8px;" id="lbl-status-registros">Exibindo todas as viagens</span>
             </div>
             <div style="font-size:12px;color:var(--muted)">
               💡 Dica: Clique nos cabeçalhos para ordenar as colunas
@@ -783,6 +676,127 @@ body {
 
       </div>
     </div>
+
+    <!-- ABA 3: DT's (APOIO OPERACIONAL COMPLETO) -->
+    <div id="tab-dts" class="tab-content-panel">
+      <div class="cobranca-container">
+
+        <!-- KPIS DE DTs -->
+        <div class="cobranca-kpis">
+          <div class="cobranca-kpi-card">
+            <div class="cobranca-kpi-label">Total de DT's Registradas</div>
+            <div class="cobranca-kpi-val" id="kpi-dts-total">0</div>
+            <div class="cobranca-kpi-sub" style="color:var(--muted)">Base Operacional DTs</div>
+          </div>
+          <div class="cobranca-kpi-card">
+            <div class="cobranca-kpi-label">Associação Aderente</div>
+            <div class="cobranca-kpi-val" id="kpi-dts-assoc-val" style="color:var(--good)">0</div>
+            <div class="cobranca-kpi-sub" id="kpi-dts-assoc-pct" style="color:var(--good)">0% de aderência</div>
+          </div>
+          <div class="cobranca-kpi-card">
+            <div class="cobranca-kpi-label">Checklist de Saída</div>
+            <div class="cobranca-kpi-val" id="kpi-dts-saida-val" style="color:var(--bad)">0</div>
+            <div class="cobranca-kpi-sub" id="kpi-dts-saida-pct" style="color:var(--bad)">0% aderente</div>
+          </div>
+          <div class="cobranca-kpi-card">
+            <div class="cobranca-kpi-label">Paradas &gt; 20 min</div>
+            <div class="cobranca-kpi-val" id="kpi-dts-paradas-val" style="color:var(--warn)">0</div>
+            <div class="cobranca-kpi-sub" id="kpi-dts-paradas-sub" style="color:var(--warn)">0 justificadas</div>
+          </div>
+          <div class="cobranca-kpi-card">
+            <div class="cobranca-kpi-label">Checklist de Retorno</div>
+            <div class="cobranca-kpi-val" id="kpi-dts-retorno-val" style="color:var(--bad)">0</div>
+            <div class="cobranca-kpi-sub" id="kpi-dts-retorno-pct" style="color:var(--bad)">0% aderente</div>
+          </div>
+        </div>
+
+        <!-- FILTROS DE DTs -->
+        <div class="filter-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div>
+              <b style="font-size:14px;font-weight:600;color:var(--ink)">Filtros da Base de DT's</b>
+              <div style="font-size:12px;color:var(--muted);margin-top:3px">Auditoria e controle operacional das DT's carregadas</div>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn-action" onclick="limparFiltrosDts()">🔄 Limpar Filtros</button>
+              <button class="btn-action btn-action-primary" onclick="exportarDtsCSV()">📥 Exportar CSV (DT's)</button>
+            </div>
+          </div>
+
+          <div class="filter-grid">
+            <div class="filter-field">
+              <label class="filter-label">🏢 Transportadora</label>
+              <select id="filtro-dts-transp" class="filter-select" onchange="aplicarFiltrosDts()"></select>
+            </div>
+
+            <div class="filter-field">
+              <label class="filter-label">🔗 Associação</label>
+              <select id="filtro-dts-assoc" class="filter-select" onchange="aplicarFiltrosDts()">
+                <option value="TODAS">Todas as Associações</option>
+                <option value="ADERENTE">Apenas Aderentes</option>
+                <option value="NAO_ADERENTE">Não Aderentes / Indefinido</option>
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label class="filter-label">🏭 Origem</label>
+              <select id="filtro-dts-origem" class="filter-select" onchange="aplicarFiltrosDts()"></select>
+            </div>
+
+            <div class="filter-field">
+              <label class="filter-label">🔍 Busca Rápida (DT / Placa / Motorista)</label>
+              <input type="text" id="filtro-dts-busca" class="filter-input" placeholder="Ex: 6103476051, BAF4G06, Raimundo..." oninput="aplicarFiltrosDts()">
+            </div>
+          </div>
+        </div>
+
+        <!-- TABELA DETALHADA DE DTs -->
+        <div class="table-card">
+          <div class="table-header-info">
+            <div>
+              <b style="font-size:13.5px;font-weight:600;color:var(--ink)">Listagem Operacional de DT's</b>
+              <span style="font-size:12px;color:var(--muted);margin-left:8px;" id="lbl-dts-status-registros">Exibindo registros de DTs</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted)">
+              💡 Dica: Clique nos cabeçalhos para ordenar as colunas
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="tabela-cobranca" id="tabela-dts">
+              <thead>
+                <tr>
+                  <th onclick="ordenarTabelaDts('dt')">DT <span class="sort-icon" id="sort-dts-dt">↕</span></th>
+                  <th onclick="ordenarTabelaDts('origem')">Origem <span class="sort-icon" id="sort-dts-origem">↕</span></th>
+                  <th onclick="ordenarTabelaDts('destino')">Destino <span class="sort-icon" id="sort-dts-destino">↕</span></th>
+                  <th onclick="ordenarTabelaDts('transportadora')">Transportadora <span class="sort-icon" id="sort-dts-transportadora">↕</span></th>
+                  <th onclick="ordenarTabelaDts('motorista')">Motorista <span class="sort-icon" id="sort-dts-motorista">↕</span></th>
+                  <th onclick="ordenarTabelaDts('placa')">Placa <span class="sort-icon" id="sort-dts-placa">↕</span></th>
+                  <th onclick="ordenarTabelaDts('associacao')">Associação <span class="sort-icon" id="sort-dts-associacao">↕</span></th>
+                  <th onclick="ordenarTabelaDts('saida')">Checklist Saída <span class="sort-icon" id="sort-dts-saida">↕</span></th>
+                  <th onclick="ordenarTabelaDts('paradas')">Paradas &gt; 20m <span class="sort-icon" id="sort-dts-paradas">↕</span></th>
+                  <th onclick="ordenarTabelaDts('retorno')">Checklist Retorno <span class="sort-icon" id="sort-dts-retorno">↕</span></th>
+                </tr>
+              </thead>
+              <tbody id="tbody-dts">
+                <!-- Linhas geradas dinamicamente -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-footer">
+            <div id="pagination-dts-info">Mostrando 0-0 de 0 DT's</div>
+            <div class="pagination-controls">
+              <button class="page-btn" id="btn-dts-prev-page" onclick="mudarPaginaDts(-1)" disabled>◀ Anterior</button>
+              <span id="page-dts-num-display" style="font-variant-numeric:tabular-nums;color:var(--ink);font-weight:600;">1 / 1</span>
+              <button class="page-btn" id="btn-dts-next-page" onclick="mudarPaginaDts(1)" disabled>Próxima ▶</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
   <!-- MODAL DE AJUSTE DE METAS -->
@@ -841,7 +855,7 @@ body {
 /* ==========================================================================
    DADOS 100% DINÂMICOS CARREGADOS DA BASE
    ========================================================================== */
-const INITIAL_DATA = {"generated_at": "2026-09-04T15:04:00.086661", "unidade": "DISSOBEL / SOBRAL-CE", "geo": "GEO NO", "agendamento_summary": {"geo": "GEO NO", "revenda": "DISSOBEL/SOBRAL(CE)", "grade_plan_carros": 21, "carros_carregados": 18, "pct_furo": 0.14285714285714285, "carros_agendados": 16, "pct_agendado": 0.8888888888888888, "pct_chegou_adiantado": 0.38095238095238093, "pct_chegou_no_horario": 0.09523809523809523, "pct_chegou_atrasado": 0.0, "pct_entrou_adiantado": 0.38095238095238093, "pct_entrou_no_horario": 0.19047619047619047, "pct_entrou_atrasado": 0.09523809523809523, "meta": 0.9}, "viagens": [{"dt": "6103468725", "data_carregamento": "2026-09-01", "placa": "RID4F06", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "DIEGO", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103468726", "data_carregamento": "2026-09-01", "placa": "POM2638", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "HAILTOM", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103468754", "data_carregamento": "2026-09-01", "placa": "RIF0J97", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "ONOFRE", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103474078", "data_carregamento": "2026-09-01", "placa": "POH0491", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 0, "checkin_categoria": "<1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "PAULO FELIPE", "origem": "Outras / Direto", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não informado", "checklist_retorno": "Não informado", "has_dts_record": false}, {"dt": "6103476051", "data_carregamento": "2026-09-02", "placa": "BAF4G06", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 0, "checkin_categoria": "<1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Nao Espelhado", "is_espelhado": 0, "score_esp": 0.5, "cluster_esp": "Sem espelhamento", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "RAIMUNDO", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103476052", "data_carregamento": "2026-09-02", "placa": "ROL0B11", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "TELHA SUL", "motorista": "JURANDIR", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103476053", "data_carregamento": "2026-09-02", "placa": "RYM7A88", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "TELHA SUL", "motorista": "MOURA", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103476054", "data_carregamento": "2026-09-02", "placa": "POL4046", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "MEVINIER", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103481027", "data_carregamento": "2026-09-02", "placa": "PMX7E42", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 0, "checkin_categoria": "<1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "EDICARLOS", "origem": "C  TERESINA", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103480031", "data_carregamento": "2026-09-03", "placa": "PMX7D82", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 0, "checkin_categoria": "<1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Nao Espelhado", "is_espelhado": 0, "score_esp": 0.5, "cluster_esp": "Sem espelhamento", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "CLEBIO", "origem": "C  TERESINA", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103480034", "data_carregamento": "2026-09-03", "placa": "FWC7C63", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 0, "checkin_categoria": "<1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Nao Espelhado", "is_espelhado": 0, "score_esp": 0.5, "cluster_esp": "Sem espelhamento", "rastreador": "MOTORA", "transportadora": "TELHA SUL", "motorista": "JEFERSON TS", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103480043", "data_carregamento": "2026-09-03", "placa": "BAF4G06", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 0, "checkin_categoria": "<1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Nao Espelhado", "is_espelhado": 0, "score_esp": 0.5, "cluster_esp": "Sem espelhamento", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "RAIMUNDO", "origem": "Outras / Direto", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não informado", "checklist_retorno": "Não informado", "has_dts_record": false}, {"dt": "6103480063", "data_carregamento": "2026-09-03", "placa": "RIF0J97", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 0, "checkin_categoria": "<1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Nao Espelhado", "is_espelhado": 0, "score_esp": 0.5, "cluster_esp": "Sem espelhamento", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "ONOFRE", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103480085", "data_carregamento": "2026-09-03", "placa": "PNR9H86", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 0, "checkin_categoria": "<1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Nao Espelhado", "is_espelhado": 0, "score_esp": 0.5, "cluster_esp": "Sem espelhamento", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "JEFFERSON", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103480087", "data_carregamento": "2026-09-03", "placa": "BAF4G09", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "MORORO", "origem": "Outras / Direto", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não informado", "checklist_retorno": "Não informado", "has_dts_record": false}, {"dt": "6103480089", "data_carregamento": "2026-09-03", "placa": "PMX7552", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "WALLAS", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103483808", "data_carregamento": "2026-09-03", "placa": "POH0491", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "PAULO FELIPE", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103483865", "data_carregamento": "2026-09-04", "placa": "RID4F06", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Nao Espelhado", "is_espelhado": 0, "score_esp": 0.5, "cluster_esp": "Sem leitura de espelhamento na Origem", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "DIEGO", "origem": "C  TERESINA", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}], "dts_records": [{"data": "-", "dt": "6103476051", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "RAIMUNDO", "placa_cavalo": "BAF4G06", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103476018", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "MORORO", "placa_cavalo": "BAF4G09", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 5, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103480034", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "TELHA SUL", "motorista": "JEFERSON TS", "placa_cavalo": "FWC7C63", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103481027", "origem": "C  TERESINA", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "EDICARLOS", "placa_cavalo": "PMX7E42", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103480085", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "JEFFERSON", "placa_cavalo": "PNR9H86", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103476054", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "MEVINIER", "placa_cavalo": "POL4046", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103468726", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "HAILTOM", "placa_cavalo": "POM2638", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103468725", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "DIEGO", "placa_cavalo": "RID4F06", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103468754", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "ONOFRE", "placa_cavalo": "RIF0J97", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103476052", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "TELHA SUL", "motorista": "JURANDIR", "placa_cavalo": "ROL0B11", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103476053", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "TELHA SUL", "motorista": "MOURA", "placa_cavalo": "RYM7A88", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103480089", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "WALLAS", "placa_cavalo": "PMX7552", "usuario_embarcado": "Não embarcado", "associacao": "Indefinido", "is_aderente": 0, "fonte_associacao": "Indefinido", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103480031", "origem": "C  TERESINA", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "CLEBIO", "placa_cavalo": "PMX7D82", "usuario_embarcado": "Não embarcado", "associacao": "Indefinido", "is_aderente": 0, "fonte_associacao": "Indefinido", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103483808", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "PAULO FELIPE", "placa_cavalo": "POH0491", "usuario_embarcado": "Não embarcado", "associacao": "Indefinido", "is_aderente": 0, "fonte_associacao": "Indefinido", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103483865", "origem": "C  TERESINA", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "DIEGO", "placa_cavalo": "RID4F06", "usuario_embarcado": "Não embarcado", "associacao": "Indefinido", "is_aderente": 0, "fonte_associacao": "Indefinido", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103480063", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "ONOFRE", "placa_cavalo": "RIF0J97", "usuario_embarcado": "Não embarcado", "associacao": "Indefinido", "is_aderente": 0, "fonte_associacao": "Indefinido", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}], "metas": {"agendamento": 0.9, "checkin_1h": 0.7, "espelhamento": 0.95}};
+const INITIAL_DATA = {"generated_at": "2026-09-04T15:18:46.183364", "unidade": "DISSOBEL / SOBRAL-CE", "geo": "GEO NO", "agendamento_summary": {"geo": "GEO NO", "revenda": "DISSOBEL/SOBRAL(CE)", "grade_plan_carros": 21, "carros_carregados": 18, "pct_furo": 0.14285714285714285, "carros_agendados": 16, "pct_agendado": 0.8888888888888888, "pct_chegou_adiantado": 0.38095238095238093, "pct_chegou_no_horario": 0.09523809523809523, "pct_chegou_atrasado": 0.0, "pct_entrou_adiantado": 0.38095238095238093, "pct_entrou_no_horario": 0.19047619047619047, "pct_entrou_atrasado": 0.09523809523809523, "meta": 0.9}, "viagens": [{"dt": "6103468725", "data_carregamento": "2026-09-01", "placa": "RID4F06", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "DIEGO", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103468726", "data_carregamento": "2026-09-01", "placa": "POM2638", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "HAILTOM", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103468754", "data_carregamento": "2026-09-01", "placa": "RIF0J97", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "ONOFRE", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103474078", "data_carregamento": "2026-09-01", "placa": "POH0491", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 0, "checkin_categoria": "<1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "PAULO FELIPE", "origem": "Outras / Direto", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não informado", "checklist_retorno": "Não informado", "has_dts_record": false}, {"dt": "6103476051", "data_carregamento": "2026-09-02", "placa": "BAF4G06", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 0, "checkin_categoria": "<1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Nao Espelhado", "is_espelhado": 0, "score_esp": 0.5, "cluster_esp": "Sem espelhamento", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "RAIMUNDO", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103476052", "data_carregamento": "2026-09-02", "placa": "ROL0B11", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "TELHA SUL", "motorista": "JURANDIR", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103476053", "data_carregamento": "2026-09-02", "placa": "RYM7A88", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "TELHA SUL", "motorista": "MOURA", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103476054", "data_carregamento": "2026-09-02", "placa": "POL4046", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "MEVINIER", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103481027", "data_carregamento": "2026-09-02", "placa": "PMX7E42", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 0, "checkin_categoria": "<1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "EDICARLOS", "origem": "C  TERESINA", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103480031", "data_carregamento": "2026-09-03", "placa": "PMX7D82", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 0, "checkin_categoria": "<1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Nao Espelhado", "is_espelhado": 0, "score_esp": 0.5, "cluster_esp": "Sem espelhamento", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "CLEBIO", "origem": "C  TERESINA", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103480034", "data_carregamento": "2026-09-03", "placa": "FWC7C63", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 0, "checkin_categoria": "<1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Nao Espelhado", "is_espelhado": 0, "score_esp": 0.5, "cluster_esp": "Sem espelhamento", "rastreador": "MOTORA", "transportadora": "TELHA SUL", "motorista": "JEFERSON TS", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103480043", "data_carregamento": "2026-09-03", "placa": "BAF4G06", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 0, "checkin_categoria": "<1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Nao Espelhado", "is_espelhado": 0, "score_esp": 0.5, "cluster_esp": "Sem espelhamento", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "RAIMUNDO", "origem": "Outras / Direto", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não informado", "checklist_retorno": "Não informado", "has_dts_record": false}, {"dt": "6103480063", "data_carregamento": "2026-09-03", "placa": "RIF0J97", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 0, "checkin_categoria": "<1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Nao Espelhado", "is_espelhado": 0, "score_esp": 0.5, "cluster_esp": "Sem espelhamento", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "ONOFRE", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103480085", "data_carregamento": "2026-09-03", "placa": "PNR9H86", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 0, "checkin_categoria": "<1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Nao Espelhado", "is_espelhado": 0, "score_esp": 0.5, "cluster_esp": "Sem espelhamento", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "JEFFERSON", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103480087", "data_carregamento": "2026-09-03", "placa": "BAF4G09", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "MORORO", "origem": "Outras / Direto", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não informado", "checklist_retorno": "Não informado", "has_dts_record": false}, {"dt": "6103480089", "data_carregamento": "2026-09-03", "placa": "PMX7552", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "WALLAS", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103483808", "data_carregamento": "2026-09-03", "placa": "POH0491", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Espelhado", "is_espelhado": 1, "score_esp": 1.0, "cluster_esp": "Check-in e espelhamento ok", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "PAULO FELIPE", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}, {"dt": "6103483865", "data_carregamento": "2026-09-04", "placa": "RID4F06", "cod_sap": "10006794", "revenda": "DISSOBEL/SOBRAL(CE)", "checkin_antecipado": 1, "checkin_categoria": ">1:00", "checkin_realizado": 1, "pct_checkin": 1.0, "espelhamento": "Nao Espelhado", "is_espelhado": 0, "score_esp": 0.5, "cluster_esp": "Sem leitura de espelhamento na Origem", "rastreador": "MOTORA", "transportadora": "PORTARE", "motorista": "DIEGO", "origem": "C  TERESINA", "destino": "DISSOBEL/SOBRAL(CE)", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_saida": "Não Aderente", "checklist_retorno": "Não Aderente", "has_dts_record": true}], "dts_records": [{"data": "-", "dt": "6103476051", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "RAIMUNDO", "placa_cavalo": "BAF4G06", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103476018", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "MORORO", "placa_cavalo": "BAF4G09", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 5, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103480034", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "TELHA SUL", "motorista": "JEFERSON TS", "placa_cavalo": "FWC7C63", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103481027", "origem": "C  TERESINA", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "EDICARLOS", "placa_cavalo": "PMX7E42", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103480085", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "JEFFERSON", "placa_cavalo": "PNR9H86", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103476054", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "MEVINIER", "placa_cavalo": "POL4046", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103468726", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "HAILTOM", "placa_cavalo": "POM2638", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103468725", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "DIEGO", "placa_cavalo": "RID4F06", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103468754", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "ONOFRE", "placa_cavalo": "RIF0J97", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103476052", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "TELHA SUL", "motorista": "JURANDIR", "placa_cavalo": "ROL0B11", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103476053", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "TELHA SUL", "motorista": "MOURA", "placa_cavalo": "RYM7A88", "usuario_embarcado": "Não embarcado", "associacao": "Aderente", "is_aderente": 1, "fonte_associacao": "Motora", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103480089", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "WALLAS", "placa_cavalo": "PMX7552", "usuario_embarcado": "Não embarcado", "associacao": "Indefinido", "is_aderente": 0, "fonte_associacao": "Indefinido", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103480031", "origem": "C  TERESINA", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "CLEBIO", "placa_cavalo": "PMX7D82", "usuario_embarcado": "Não embarcado", "associacao": "Indefinido", "is_aderente": 0, "fonte_associacao": "Indefinido", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103483808", "origem": "C  AQUIRAZ", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "PAULO FELIPE", "placa_cavalo": "POH0491", "usuario_embarcado": "Não embarcado", "associacao": "Indefinido", "is_aderente": 0, "fonte_associacao": "Indefinido", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103483865", "origem": "C  TERESINA", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "DIEGO", "placa_cavalo": "RID4F06", "usuario_embarcado": "Não embarcado", "associacao": "Indefinido", "is_aderente": 0, "fonte_associacao": "Indefinido", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}, {"data": "-", "dt": "6103480063", "origem": "C  PERNAMBUCO", "destino": "DISSOBEL/SOBRAL(CE)", "transportadora_dts": "DISSOBEL DIST SOBRALENSE DE BEB LTD BEBIDAS LTDA", "transportadora": "PORTARE", "motorista": "ONOFRE", "placa_cavalo": "RIF0J97", "usuario_embarcado": "Não embarcado", "associacao": "Indefinido", "is_aderente": 0, "fonte_associacao": "Indefinido", "checklist_saida": "Não Aderente", "paradas_maiores_20min": 0, "paradas_justificadas": 0, "checklist_retorno": "Não Aderente"}], "metas": {"agendamento": 0.9, "checkin_1h": 0.7, "espelhamento": 0.95}};
 
 const MIN_VIAGENS_RANKING = 4;
 
@@ -868,44 +882,10 @@ function carregarMetasAtivas() {
   return Object.assign({}, METAS_PADRAO);
 }
 
-const T = {
-  "bg": "#080c14",
-  "plane": "rgba(255,255,255,.04)",
-  "plane-2": "rgba(255,255,255,.02)",
-  "stroke": "rgba(255,255,255,.10)",
-  "ink": "#e8edf6",
-  "ink-2": "#b8c1d1",
-  "muted": "#8a93a5",
-  "acc": "#67e8f9",
-  "acc-2": "#93c5fd",
-  "good": "#6ee7b7",
-  "bad": "#fb7185",
-  "warn": "#fbbf24",
-  "good-bg": "rgba(110,231,183,.14)",
-  "bad-bg": "rgba(251,113,133,.14)",
-  "warn-bg": "rgba(251,191,36,.14)",
-  "track": "rgba(255,255,255,.06)",
-  "grid": "rgba(255,255,255,.055)",
-  "radius": "18px",
-  "bw": "1px",
-  "shadow": "0 18px 50px -12px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3)",
-  "font": "'Inter'",
-  "display": "'Plus Jakarta Sans'",
-  "mono": "'JetBrains Mono'",
-  "c1": "#67e8f9",
-  "c2": "#60a5fa",
-  "c3": "#6ee7b7",
-  "c4": "#fbbf24",
-  "c5": "#c084fc",
-  "on-acc": "#04121a",
-  "on-cat": "#04121a",
-  "on-good": "#04150e"
-};
-const F = "Inter, system-ui, sans-serif";
-
 var APP_STATE = {
   data: INITIAL_DATA,
   viagens: INITIAL_DATA.viagens || [],
+  dts_records: INITIAL_DATA.dts_records || [],
   agendamento: INITIAL_DATA.agendamento_summary || {},
   metas: carregarMetasAtivas(),
   abaAtiva: 'consolidado',
@@ -914,6 +894,12 @@ var APP_STATE = {
   direcaoOrdenacao: 'desc',
   paginaAtual: 1,
   itensPorPagina: 50,
+  // Estado da Aba DTs
+  dtsFiltradas: [],
+  colunaOrdenacaoDts: 'dt',
+  direcaoOrdenacaoDts: 'asc',
+  paginaAtualDts: 1,
+  itensPorPaginaDts: 50,
   chartInstance: null
 };
 
@@ -942,6 +928,12 @@ function calcularMotivo(v) {
   if (!checkOk && espOk) return 'Check-in >1h';
   if (checkOk && !espOk) return 'Espelhamento';
   return 'Conforme';
+}
+
+// Helper: Pontuação ponderada de Espelhamento (1.0 se espelhado, 0.5 se não espelhado)
+function getViagemScoreEsp(v) {
+  if (v.score_esp !== undefined && v.score_esp !== null) return Number(v.score_esp);
+  return Number(v.is_espelhado) === 1 ? 1.0 : 0.5;
 }
 
 /* ==========================================================================
@@ -994,6 +986,7 @@ function salvarMetasUsuario() {
 function renderizarDashboardCompleto(dados) {
   APP_STATE.data = dados;
   APP_STATE.viagens = dados.viagens || [];
+  APP_STATE.dts_records = dados.dts_records || [];
   APP_STATE.agendamento = dados.agendamento_summary || {};
 
   // 1. Atualizar Badge Data
@@ -1008,10 +1001,14 @@ function renderizarDashboardCompleto(dados) {
     badge.innerText = 'Atualizado em ' + dia + '/' + mes + '/' + ano + ' às ' + horas + ':' + mins;
   }
 
-  // 2. Badge Total Viagens Tab
+  // 2. Badges das Abas
   var totalViagens = APP_STATE.viagens.length;
   var bTab = document.getElementById('badge-total-trips');
   if (bTab) bTab.innerText = totalViagens + (totalViagens === 1 ? ' viagem' : ' viagens');
+
+  var totalDts = APP_STATE.dts_records.length;
+  var bDts = document.getElementById('badge-total-dts');
+  if (bDts) bDts.innerText = totalDts + ' DT\'s (viagens)';
 
   // 3. Renderizar Hero & KPIs dos 3 Pilares
   renderizarHeroEKpis();
@@ -1025,22 +1022,23 @@ function renderizarDashboardCompleto(dados) {
   // 6. Renderizar Comparação de Transportadoras
   renderizarComparacaoTransportadoras();
 
-  // 7. Configurar Opções de Filtro da Aba Cobrança
+  // 7. Configurar Opções de Filtro da Aba Cobrança & DTs
   popularFiltrosCobranca();
+  popularFiltrosDts();
 
-  // 8. Aplicar Filtros da Aba Cobrança
+  // 8. Aplicar Filtros das Abas
   aplicarFiltrosCobranca();
+  aplicarFiltrosDts();
 }
 
 function renderizarHeroEKpis() {
   var total = APP_STATE.viagens.length;
   var pctAg = APP_STATE.agendamento.pct_agendado || 0;
   var totalCheckin = APP_STATE.viagens.filter(v => Number(v.checkin_antecipado) === 1).length;
-  var totalEspFisico = APP_STATE.viagens.filter(v => Number(v.is_espelhado) === 1).length;
-  var somaScoreEsp = APP_STATE.viagens.reduce((acc, v) => acc + (v.score_esp !== undefined && v.score_esp !== null ? Number(v.score_esp) : (Number(v.is_espelhado) === 1 ? 1.0 : 0.5)), 0);
+  var sumScoreEsp = APP_STATE.viagens.reduce((acc, v) => acc + getViagemScoreEsp(v), 0);
 
   var pctCheckin = total > 0 ? (totalCheckin / total) : 0;
-  var pctEsp = total > 0 ? (somaScoreEsp / total) : 0;
+  var pctEsp = total > 0 ? (sumScoreEsp / total) : 0;
   var scoreGeral = (pctAg + pctCheckin + pctEsp) / 3;
 
   var metaScore = APP_STATE.metas.score;
@@ -1101,19 +1099,18 @@ function renderizarHeroEKpis() {
 
 function renderizarGraficoDiario() {
   var diasMap = {};
-  var pctAg = APP_STATE.agendamento.pct_agendado || 0.928;
+  var pctAg = APP_STATE.agendamento.pct_agendado || 0.8889;
   var metaScore = Math.round(APP_STATE.metas.score * 100);
 
   APP_STATE.viagens.forEach(function(v) {
     var dt = v.data_carregamento;
     if (!dt) return;
     if (!diasMap[dt]) {
-      diasMap[dt] = { total: 0, checkin: 0, esp: 0, naMeta: 0 };
+      diasMap[dt] = { total: 0, checkin: 0, espScore: 0, naMeta: 0 };
     }
     diasMap[dt].total++;
-    var vScoreEsp = (v.score_esp !== undefined && v.score_esp !== null) ? Number(v.score_esp) : (Number(v.is_espelhado) === 1 ? 1.0 : 0.5);
     if (Number(v.checkin_antecipado) === 1) diasMap[dt].checkin++;
-    diasMap[dt].esp += vScoreEsp;
+    diasMap[dt].espScore += getViagemScoreEsp(v);
     if (Number(v.checkin_antecipado) === 1 && Number(v.is_espelhado) === 1) diasMap[dt].naMeta++;
   });
 
@@ -1131,7 +1128,7 @@ function renderizarGraficoDiario() {
     viagensData.push(d.total);
 
     var dayChkPct = d.total > 0 ? (d.checkin / d.total) : 0;
-    var dayEspPct = d.total > 0 ? (d.esp / d.total) : 0;
+    var dayEspPct = d.total > 0 ? (d.espScore / d.total) : 0;
     var dayScore = ((pctAg + dayChkPct + dayEspPct) / 3) * 100;
     scoresData.push(parseFloat(dayScore.toFixed(1)));
 
@@ -1144,88 +1141,103 @@ function renderizarGraficoDiario() {
     });
   });
 
-  var elChart = document.querySelector('[data-chart="linha"]');
-  if (!elChart) return;
-
-  if (!APP_STATE.chartInstance) {
-    APP_STATE.chartInstance = echarts.init(elChart, null, { renderer: 'svg' });
-    window.addEventListener('resize', function() { if (APP_STATE.chartInstance) APP_STATE.chartInstance.resize(); });
-  }
+  var dom = document.getElementById('chart-evolucao-diaria');
+  if (!dom) return;
+  if (APP_STATE.chartInstance) APP_STATE.chartInstance.dispose();
+  APP_STATE.chartInstance = echarts.init(dom);
 
   var option = {
-    textStyle: { fontFamily: F, color: T['ink-2'] },
-    grid: { left: 46, right: 54, top: 38, bottom: 70, containLabel: false },
-    legend: {
-      show: true, orient: 'horizontal', left: 'center', bottom: 4, itemGap: 36, itemWidth: 18, itemHeight: 10,
-      textStyle: { color: T.ink, fontSize: 11.5, fontFamily: F, padding: [0, 0, 0, 4] },
-      data: ['Viagens do Dia', 'Score de Puxada (%)', 'Meta (' + metaScore + '%)']
-    },
+    backgroundColor: 'transparent',
     tooltip: {
-      trigger: 'axis', confine: true, backgroundColor: T.ink, borderWidth: 0, padding: [11, 14],
-      textStyle: { color: T.bg, fontSize: 12, fontFamily: F },
-      extraCssText: 'border-radius:8px;box-shadow:0 12px 30px rgba(0,0,0,0.5);z-index:99;',
-      axisPointer: { type: 'line', lineStyle: { color: T.muted, type: 'dashed' } },
+      trigger: 'axis',
+      backgroundColor: 'rgba(15, 23, 42, 0.95)',
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      borderWidth: 1,
+      textStyle: { color: '#f8fafc', fontSize: 12 },
       formatter: function(params) {
-        var p0 = params.find(p => p.seriesName === 'Viagens do Dia') || params[0];
-        var idx = p0.dataIndex;
-        var valScore = Number(scoresData[idx] || 0);
-        var valViagens = Number(viagensData[idx] || 0);
-        var isAbove = valScore >= metaScore;
-        var diff = Math.abs(valScore - metaScore).toFixed(1).replace('.', ',');
-        var d = detalhesData[idx] || { total: valViagens, naMeta: 0, pct: 0, checkin: 0, esp: 0 };
-
-        return '<div style="opacity:.65;font-size:11px;margin-bottom:3px">📅 Dia ' + p0.axisValue + '</div>' +
-               '<div style="font-weight:700;font-size:15px;margin:2px 0;color:' + T.bg + '">Score: ' + valScore.toFixed(1).replace('.', ',') + '%</div>' +
-               '<div style="font-size:11.5px;font-weight:600;margin-bottom:7px;color:' + (isAbove ? '#059669' : '#e11d48') + '">' +
-               (isAbove ? '▲' : '▼') + ' ' + diff + '% ' + (isAbove ? 'acima' : 'abaixo') + ' da meta (' + metaScore + '%)</div>' +
-               '<div style="border-top:1px dashed rgba(8,12,20,0.2);padding-top:6px;font-size:11.5px;color:' + T.bg + ';line-height:1.45">' +
-               '<div>• Volume: <b>' + valViagens + (valViagens === 1 ? ' viagem' : ' viagens') + '</b></div>' +
-               '<div>• Atingimento: <b>' + d.naMeta + ' de ' + d.total + '</b> na meta (<b>' + d.pct.toFixed(1).replace('.', ',') + '%</b>)</div>' +
-               '<div>• Check-in: <b>' + d.checkin.toFixed(1).replace('.', ',') + '%</b> | Espelhamento: <b>' + d.esp.toFixed(1).replace('.', ',') + '%</b></div>' +
-               '</div>';
+        var idx = params[0].dataIndex;
+        var det = detalhesData[idx];
+        var s = '<b>' + params[0].axisValue + '</b><br/>';
+        s += 'Score de Puxada: <b>' + (scoresData[idx] || 0) + '%</b><br/>';
+        s += 'Viagens Totais: <b>' + det.total + '</b><br/>';
+        s += 'Check-in > 1h: <b>' + det.checkin.toFixed(1) + '%</b><br/>';
+        s += 'Espelhamento (Score): <b>' + det.esp.toFixed(1) + '%</b>';
+        return s;
       }
     },
-    xAxis: {
-      type: 'category', boundaryGap: true, data: rotulos,
-      axisLine: { lineStyle: { color: T.stroke } },
-      axisTick: { show: true, alignWithLabel: true, lineStyle: { color: T.stroke } },
-      axisLabel: { color: T.muted, fontSize: 9.5, fontFamily: F, margin: 10, interval: 0 }
+    legend: {
+      top: 0,
+      right: 10,
+      itemGap: 14,
+      textStyle: { color: '#8a93a5', fontSize: 11 },
+      data: ['Viagens do Dia', 'Score de Puxada (%)', 'Meta (' + metaScore + '%)']
     },
+    grid: {
+      top: 36,
+      left: 36,
+      right: 44,
+      bottom: 24,
+      containLabel: true
+    },
+    xAxis: [{
+      type: 'category',
+      data: rotulos,
+      axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+      axisLabel: { color: '#8a93a5', fontSize: 11 }
+    }],
     yAxis: [
       {
-        type: 'value', name: 'Viagens', nameTextStyle: { color: T.muted, fontSize: 11, fontFamily: F, padding: [0, 0, 6, 0] },
-        min: 0, splitLine: { lineStyle: { color: T.grid, type: 'dashed' } },
-        axisLine: { show: false }, axisTick: { show: false },
-        axisLabel: { color: T.muted, fontSize: 10.5, fontFamily: F, margin: 8 }
+        type: 'value',
+        name: 'Viagens',
+        min: 0,
+        axisLine: { show: false },
+        splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)', type: 'dashed' } },
+        axisLabel: { color: '#8a93a5', fontSize: 11 }
       },
       {
-        type: 'value', name: 'Score (%)', nameTextStyle: { color: T.muted, fontSize: 11, fontFamily: F, padding: [0, 0, 6, 0] },
-        min: 0, max: 100, interval: 20, splitLine: { show: false },
-        axisLine: { show: false }, axisTick: { show: false },
-        axisLabel: { color: T.muted, fontSize: 10.5, fontFamily: F, margin: 8, formatter: val => val + '%' }
+        type: 'value',
+        name: 'Score %',
+        min: 0,
+        max: 100,
+        axisLine: { show: false },
+        splitLine: { show: false },
+        axisLabel: { color: '#8a93a5', fontSize: 11, formatter: '{value}%' }
       }
     ],
     series: [
       {
-        name: 'Viagens do Dia', type: 'bar', yAxisIndex: 0, z: 2, barMaxWidth: 14,
-        itemStyle: { color: 'rgba(103,232,249,0.35)', borderColor: T.acc, borderWidth: 1, borderRadius: [4, 4, 0, 0] },
+        name: 'Viagens do Dia',
+        type: 'bar',
+        barMaxWidth: 26,
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: '#67e8f9' },
+            { offset: 1, color: 'rgba(103, 232, 249, 0.2)' }
+          ]),
+          borderRadius: [4, 4, 0, 0]
+        },
         data: viagensData
       },
       {
-        name: 'Score de Puxada (%)', type: 'line', yAxisIndex: 1, z: 4, smooth: 0.22, showSymbol: true, symbol: 'circle', symbolSize: 6,
-        lineStyle: { width: 2.4, color: T.acc },
-        itemStyle: { color: T.acc, borderColor: T.acc, borderWidth: 1 },
-        data: scoresData,
-        markLine: {
-          silent: true, symbol: 'none', z: 5,
-          lineStyle: { color: T.warn, type: 'dashed', width: 1.5 },
-          label: { formatter: 'Meta ' + metaScore + '%', color: T.warn, fontSize: 10, fontFamily: F, position: 'insideEndTop', distance: [0, -12], padding: [3, 8], backgroundColor: 'rgba(8,12,20,0.88)', borderRadius: 4 },
-          data: [{ yAxis: metaScore }]
-        }
+        name: 'Score de Puxada (%)',
+        type: 'line',
+        yAxisIndex: 1,
+        z: 4,
+        smooth: 0.22,
+        showSymbol: true,
+        symbol: 'circle',
+        symbolSize: 6,
+        itemStyle: { color: '#6ee7b7' },
+        lineStyle: { width: 3, color: '#6ee7b7' },
+        data: scoresData
       },
       {
-        name: 'Meta (' + metaScore + '%)', type: 'line', yAxisIndex: 1, data: [], symbol: 'none',
-        lineStyle: { type: 'dashed', color: T.warn, width: 2 }, itemStyle: { color: T.warn }
+        name: 'Meta (' + metaScore + '%)',
+        type: 'line',
+        yAxisIndex: 1,
+        symbol: 'none',
+        lineStyle: { color: '#fbbf24', width: 2, type: 'dashed' },
+        data: rotulos.map(() => metaScore)
       }
     ]
   };
@@ -1234,8 +1246,9 @@ function renderizarGraficoDiario() {
 }
 
 function renderizarRankings() {
-  var pctAg = APP_STATE.agendamento.pct_agendado || 0.928;
+  var pctAg = APP_STATE.agendamento.pct_agendado || 0.8889;
   var metaScore = APP_STATE.metas.score;
+
   var motoristasMap = {};
   var veiculosMap = {};
   var unregMap = {};
@@ -1244,202 +1257,176 @@ function renderizarRankings() {
     var mot = (v.motorista || '').trim();
     var placa = (v.placa || '').trim().toUpperCase();
     var isUnreg = mot === 'Não vinculado' || mot === 'Não cadastrado' || mot === 'N/I' || placa === 'S/ PLACA' || v.transportadora === 'A verificar' || v.transportadora.includes('Terceira');
-    var vScoreEsp = (v.score_esp !== undefined && v.score_esp !== null) ? Number(v.score_esp) : (Number(v.is_espelhado) === 1 ? 1.0 : 0.5);
+    var espScore = getViagemScoreEsp(v);
 
-    // Motoristas (Apenas cadastrados)
+    // Motoristas
     if (!isUnreg && mot) {
-      if (!motoristasMap[mot]) motoristasMap[mot] = { total: 0, checkin: 0, esp: 0, transp: v.transportadora };
+      if (!motoristasMap[mot]) motoristasMap[mot] = { total: 0, checkin: 0, espScore: 0, transp: v.transportadora };
       motoristasMap[mot].total++;
       if (Number(v.checkin_antecipado) === 1) motoristasMap[mot].checkin++;
-      motoristasMap[mot].esp += vScoreEsp;
+      motoristasMap[mot].espScore += espScore;
     }
 
-    // Veículos (Apenas cadastrados)
+    // Veículos
     if (!isUnreg && placa && placa !== 'S/ PLACA') {
-      if (!veiculosMap[placa]) veiculosMap[placa] = { total: 0, checkin: 0, esp: 0, transp: v.transportadora };
+      if (!veiculosMap[placa]) veiculosMap[placa] = { total: 0, checkin: 0, espScore: 0, transp: v.transportadora };
       veiculosMap[placa].total++;
       if (Number(v.checkin_antecipado) === 1) veiculosMap[placa].checkin++;
-      veiculosMap[placa].esp += vScoreEsp;
+      veiculosMap[placa].espScore += espScore;
     }
 
     // Placas Não Cadastradas
     if (isUnreg) {
       var key = placa || 'S/ Placa';
-      if (!unregMap[key]) unregMap[key] = { total: 0, checkin: 0, esp: 0, transp: 'A verificar' };
+      if (!unregMap[key]) unregMap[key] = { total: 0, checkin: 0, espScore: 0, transp: 'A verificar' };
       unregMap[key].total++;
       if (Number(v.checkin_antecipado) === 1) unregMap[key].checkin++;
-      unregMap[key].esp += vScoreEsp;
+      unregMap[key].espScore += espScore;
     }
   });
 
-  // 1. Motoristas List (Filtrando pelo volume mínimo de viagens)
+  // 1. Motoristas List
   var motList = Object.keys(motoristasMap).map(function(m) {
     var d = motoristasMap[m];
     var cPct = d.checkin / d.total;
-    var ePct = d.esp / d.total;
+    var ePct = d.espScore / d.total;
     var score = (pctAg + cPct + ePct) / 3;
     return { nome: m, total: d.total, checkin_pct: cPct, esp_pct: ePct, score: score, transp: d.transp };
   }).filter(m => m.total >= MIN_VIAGENS_RANKING);
 
-  // Melhores: Score >= metaScore
   var topMot = motList.filter(m => m.score >= metaScore).sort((a, b) => b.score - a.score || b.total - a.total);
-  // Piores: Score < metaScore
   var botMot = motList.filter(m => m.score < metaScore).sort((a, b) => a.score - b.score || b.total - a.total);
 
-  // Render Top Motoristas
   var elTopMot = document.getElementById('ranking-motoristas-top');
   if (elTopMot) {
-    elTopMot.innerHTML = topMot.slice(0, 5).map(function(m, idx) {
-      var wPct = Math.round(m.score * 100);
-      var viagensTxt = m.total + (m.total === 1 ? ' viagem' : ' viagens');
-      return '<div>' +
-             '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">' +
-             '  <span style="display:flex;align-items:center;gap:9px;color:var(--ink-2)">' +
-             '    <b style="width:19px;height:19px;border-radius:var(--radius);background:var(--plane-2);border:var(--bw) solid var(--stroke);display:grid;place-items:center;font-size:10.5px;color:var(--ink-2)">' + (idx + 1) + '</b>' +
-             '    ' + m.nome + ' (' + viagensTxt + ')' +
-             '  </span>' +
-             '  <b style="color:var(--good);font-variant-numeric:tabular-nums">' + fPct(m.score) + '</b>' +
-             '</div>' +
-             '<div style="height:8px;border-radius:var(--radius);background:var(--track);overflow:hidden">' +
-             '  <div style="height:100%;width:' + wPct + '%;background:var(--acc);border-radius:var(--radius)"></div>' +
-             '</div>' +
-             '</div>';
-    }).join('');
+    if (topMot.length === 0) {
+      elTopMot.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:12px">Nenhum motorista com score >= ' + Math.round(metaScore * 100) + '% (' + MIN_VIAGENS_RANKING + '+ viagens)</div>';
+    } else {
+      elTopMot.innerHTML = topMot.map(function(m, i) {
+        return '<div class="ranking-item">' +
+          '<span class="ranking-pos top">' + (i + 1) + 'º</span>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + m.nome + '</div>' +
+            '<div style="font-size:11px;color:var(--muted)">' + m.transp + ' · ' + m.total + ' viagens</div>' +
+          '</div>' +
+          '<div style="text-align:right">' +
+            '<div style="font-size:13px;font-weight:700;color:var(--good)">' + fPct(m.score) + '</div>' +
+            '<div style="font-size:10px;color:var(--muted)">chk ' + fPct(m.checkin_pct) + ' · esp ' + fPct(m.esp_pct) + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
   }
 
-  // Render Bottom Motoristas
-  var elBotMot = document.getElementById('ranking-motoristas-bottom');
+  var elBotMot = document.getElementById('ranking-motoristas-bot');
   if (elBotMot) {
-    elBotMot.innerHTML = botMot.slice(0, 5).map(function(m, idx) {
-      var wPct = Math.round(m.score * 100);
-      var viagensTxt = m.total + (m.total === 1 ? ' viagem' : ' viagens');
-      return '<div>' +
-             '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">' +
-             '  <span style="display:flex;align-items:center;gap:9px;color:var(--ink-2)">' +
-             '    <b style="width:19px;height:19px;border-radius:var(--radius);background:var(--bad-bg);border:var(--bw) solid var(--bad);display:grid;place-items:center;font-size:10.5px;color:var(--bad)">' + (idx + 1) + '</b>' +
-             '    ' + m.nome + ' (' + viagensTxt + ')' +
-             '  </span>' +
-             '  <b style="color:var(--bad);font-variant-numeric:tabular-nums">' + fPct(m.score) + '</b>' +
-             '</div>' +
-             '<div style="height:8px;border-radius:var(--radius);background:var(--track);overflow:hidden">' +
-             '  <div style="height:100%;width:' + wPct + '%;background:var(--bad);border-radius:var(--radius)"></div>' +
-             '</div>' +
-             '</div>';
-    }).join('');
+    if (botMot.length === 0) {
+      elBotMot.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:12px">Nenhum motorista abaixo da meta (' + MIN_VIAGENS_RANKING + '+ viagens)</div>';
+    } else {
+      elBotMot.innerHTML = botMot.map(function(m, i) {
+        return '<div class="ranking-item">' +
+          '<span class="ranking-pos bot">' + (i + 1) + 'º</span>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + m.nome + '</div>' +
+            '<div style="font-size:11px;color:var(--muted)">' + m.transp + ' · ' + m.total + ' viagens</div>' +
+          '</div>' +
+          '<div style="text-align:right">' +
+            '<div style="font-size:13px;font-weight:700;color:var(--bad)">' + fPct(m.score) + '</div>' +
+            '<div style="font-size:10px;color:var(--muted)">chk ' + fPct(m.checkin_pct) + ' · esp ' + fPct(m.esp_pct) + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
   }
 
-  // 2. Veículos List (Filtrando pelo volume mínimo de viagens)
+  // 2. Veículos List
   var veicList = Object.keys(veiculosMap).map(function(p) {
     var d = veiculosMap[p];
     var cPct = d.checkin / d.total;
-    var ePct = d.esp / d.total;
+    var ePct = d.espScore / d.total;
     var score = (pctAg + cPct + ePct) / 3;
     return { placa: p, total: d.total, checkin_pct: cPct, esp_pct: ePct, score: score, transp: d.transp };
-  }).filter(v => v.total >= MIN_VIAGENS_RANKING);
+  }).filter(p => p.total >= MIN_VIAGENS_RANKING);
 
-  // Melhores: Score >= metaScore
-  var topVeic = veicList.filter(v => v.score >= metaScore).sort((a, b) => b.score - a.score || b.total - a.total);
-  // Piores: Score < metaScore
-  var botVeic = veicList.filter(v => v.score < metaScore).sort((a, b) => a.score - b.score || b.total - a.total);
+  var topVeic = veicList.filter(p => p.score >= metaScore).sort((a, b) => b.score - a.score || b.total - a.total);
+  var botVeic = veicList.filter(p => p.score < metaScore).sort((a, b) => a.score - b.score || b.total - a.total);
 
-  // Render Top Veículos
   var elTopVeic = document.getElementById('ranking-veiculos-top');
   if (elTopVeic) {
-    elTopVeic.innerHTML = topVeic.slice(0, 5).map(function(v, idx) {
-      var wPct = Math.round(v.score * 100);
-      var viagensTxt = v.total + (v.total === 1 ? ' viagem' : ' viagens');
-      return '<div>' +
-             '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">' +
-             '  <span style="display:flex;align-items:center;gap:9px;color:var(--ink-2)">' +
-             '    <b style="width:19px;height:19px;border-radius:var(--radius);background:var(--plane-2);border:var(--bw) solid var(--stroke);display:grid;place-items:center;font-size:10.5px;color:var(--ink-2)">' + (idx + 1) + '</b>' +
-             '    ' + v.placa + ' (' + v.transp + ' · ' + viagensTxt + ')' +
-             '  </span>' +
-             '  <b style="color:var(--good);font-variant-numeric:tabular-nums">' + fPct(v.score) + '</b>' +
-             '</div>' +
-             '<div style="height:8px;border-radius:var(--radius);background:var(--track);overflow:hidden">' +
-             '  <div style="height:100%;width:' + wPct + '%;background:var(--acc);border-radius:var(--radius)"></div>' +
-             '</div>' +
-             '</div>';
-    }).join('');
+    if (topVeic.length === 0) {
+      elTopVeic.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:12px">Nenhum veículo com score >= ' + Math.round(metaScore * 100) + '% (' + MIN_VIAGENS_RANKING + '+ viagens)</div>';
+    } else {
+      elTopVeic.innerHTML = topVeic.map(function(p, i) {
+        return '<div class="ranking-item">' +
+          '<span class="ranking-pos top">' + (i + 1) + 'º</span>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-size:12px;font-weight:600;color:var(--ink)">' + p.placa + '</div>' +
+            '<div style="font-size:11px;color:var(--muted)">' + p.transp + ' · ' + p.total + ' viagens</div>' +
+          '</div>' +
+          '<div style="text-align:right">' +
+            '<div style="font-size:13px;font-weight:700;color:var(--good)">' + fPct(p.score) + '</div>' +
+            '<div style="font-size:10px;color:var(--muted)">chk ' + fPct(p.checkin_pct) + ' · esp ' + fPct(p.esp_pct) + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
   }
 
-  // Render Bottom Veículos
-  var elBotVeic = document.getElementById('ranking-veiculos-bottom');
+  var elBotVeic = document.getElementById('ranking-veiculos-bot');
   if (elBotVeic) {
-    elBotVeic.innerHTML = botVeic.slice(0, 5).map(function(v, idx) {
-      var wPct = Math.round(v.score * 100);
-      var viagensTxt = v.total + (v.total === 1 ? ' viagem' : ' viagens');
-      return '<div>' +
-             '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">' +
-             '  <span style="display:flex;align-items:center;gap:9px;color:var(--ink-2)">' +
-             '    <b style="width:19px;height:19px;border-radius:var(--radius);background:var(--bad-bg);border:var(--bw) solid var(--bad);display:grid;place-items:center;font-size:10.5px;color:var(--bad)">' + (idx + 1) + '</b>' +
-             '    ' + v.placa + ' (' + v.transp + ' · ' + viagensTxt + ')' +
-             '  </span>' +
-             '  <b style="color:var(--bad);font-variant-numeric:tabular-nums">' + fPct(v.score) + '</b>' +
-             '</div>' +
-             '<div style="height:8px;border-radius:var(--radius);background:var(--track);overflow:hidden">' +
-             '  <div style="height:100%;width:' + wPct + '%;background:var(--bad);border-radius:var(--radius)"></div>' +
-             '</div>' +
-             '</div>';
-    }).join('');
+    if (botVeic.length === 0) {
+      elBotVeic.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:12px">Nenhum veículo abaixo da meta (' + MIN_VIAGENS_RANKING + '+ viagens)</div>';
+    } else {
+      elBotVeic.innerHTML = botVeic.map(function(p, i) {
+        return '<div class="ranking-item">' +
+          '<span class="ranking-pos bot">' + (i + 1) + 'º</span>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-size:12px;font-weight:600;color:var(--ink)">' + p.placa + '</div>' +
+            '<div style="font-size:11px;color:var(--muted)">' + p.transp + ' · ' + p.total + ' viagens</div>' +
+          '</div>' +
+          '<div style="text-align:right">' +
+            '<div style="font-size:13px;font-weight:700;color:var(--bad)">' + fPct(p.score) + '</div>' +
+            '<div style="font-size:10px;color:var(--muted)">chk ' + fPct(p.checkin_pct) + ' · esp ' + fPct(p.esp_pct) + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
   }
 
-  // 3. Placas Não Cadastradas Cards
-  var unregList = Object.keys(unregMap).map(function(p) {
-    var d = unregMap[p];
+  // 3. Não Cadastrados
+  var unregList = Object.keys(unregMap).map(function(k) {
+    var d = unregMap[k];
     var cPct = d.checkin / d.total;
-    var ePct = d.esp / d.total;
+    var ePct = d.espScore / d.total;
     var score = (pctAg + cPct + ePct) / 3;
-    return { placa: p, total: d.total, checkin_pct: cPct, esp_pct: ePct, score: score, transp: 'A verificar' };
-  }).sort((a, b) => b.total - a.total || b.score - a.score);
+    return { placa: k, total: d.total, checkin_pct: cPct, esp_pct: ePct, score: score };
+  }).sort((a, b) => b.total - a.total);
 
-  var totalUnregTrips = unregList.reduce((acc, curr) => acc + curr.total, 0);
-  var unregTripsTxt = totalUnregTrips + (totalUnregTrips === 1 ? ' viagem' : ' viagens');
-  var elUnregTitle = document.getElementById('placas-unreg-titulo');
-  if (elUnregTitle) elUnregTitle.innerText = 'Placas Não Cadastradas na Base (' + unregTripsTxt + ')';
-  var elUnregBadge = document.getElementById('badge-unreg-pendentes');
-  if (elUnregBadge) elUnregBadge.innerText = '⚠️ ' + unregList.length + ' Identificadores Pendentes';
+  var elCountUnreg = document.getElementById('count-placas-unreg');
+  if (elCountUnreg) elCountUnreg.innerText = unregList.length;
 
-  var elGridUnreg = document.getElementById('grid-placas-nao-cadastradas');
-  if (elGridUnreg) {
-    elGridUnreg.innerHTML = unregList.map(function(u) {
-      var scoreColor = u.score >= metaScore ? 'var(--good)' : (u.score >= 0.6 ? 'var(--warn)' : 'var(--bad)');
-      var isSPlaca = u.placa === 'S/ Placa' || u.placa === 'S/ PLACA';
-      var placaStyle = isSPlaca ? 'color:var(--bad);' : 'color:var(--ink);';
-      
-      var chkColor = u.checkin_pct >= APP_STATE.metas.checkin_1h ? 'var(--good)' : (u.checkin_pct > 0 ? 'var(--warn)' : 'var(--bad)');
-      var espColor = u.esp_pct >= APP_STATE.metas.espelhamento ? 'var(--good)' : (u.esp_pct > 0 ? (u.esp_pct >= 0.7 ? 'var(--good)' : 'var(--warn)') : 'var(--bad)');
-      var uViagensTxt = u.total + (u.total === 1 ? ' viagem' : ' viagens');
-
-      return '<div style="background:var(--plane-2);border:var(--bw) solid var(--stroke);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between;">' +
-             '  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
-             '    <span style="display:flex;align-items:center;gap:8px;">' +
-             '      <strong style="' + placaStyle + 'font-size:13.5px;letter-spacing:0.3px;">' + u.placa + '</strong>' +
-             '      <span style="font-size:11px;color:var(--muted);background:var(--plane);border:var(--bw) solid var(--stroke);padding:2px 6px;border-radius:var(--radius);font-weight:600;">' + uViagensTxt + '</span>' +
-             '    </span>' +
-             '    <b style="font-size:13.5px;color:' + scoreColor + ';font-variant-numeric:tabular-nums;">Score: ' + fPct(u.score) + '</b>' +
-             '  </div>' +
-             '  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;border-top:1px dashed var(--stroke);padding-top:10px;text-align:left;">' +
-             '    <div>' +
-             '      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:2px;">Check-in</div>' +
-             '      <div style="font-size:12px;font-weight:700;color:' + chkColor + ';">' + fPct(u.checkin_pct) + '</div>' +
-             '    </div>' +
-             '    <div>' +
-             '      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:2px;">Espelham.</div>' +
-             '      <div style="font-size:12px;font-weight:700;color:' + espColor + ';">' + fPct(u.esp_pct) + '</div>' +
-             '    </div>' +
-             '    <div>' +
-             '      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:2px;">Transp.</div>' +
-             '      <div style="font-size:12px;font-weight:600;color:var(--warn);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">A verificar</div>' +
-             '    </div>' +
-             '  </div>' +
-             '</div>';
-    }).join('');
+  var elListUnreg = document.getElementById('lista-placas-unreg');
+  if (elListUnreg) {
+    if (unregList.length === 0) {
+      elListUnreg.innerHTML = '<div style="padding:16px;text-align:center;color:var(--good);font-size:12px">✓ Todas as placas estão vinculadas a motoristas cadastrados</div>';
+    } else {
+      elListUnreg.innerHTML = unregList.map(function(u) {
+        return '<div class="ranking-item" style="background:var(--plane-2);border:var(--bw) solid var(--stroke);border-radius:6px;padding:8px 10px;margin-bottom:6px">' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-size:12px;font-weight:600;color:var(--ink)">' + u.placa + '</div>' +
+            '<div style="font-size:11px;color:var(--muted)">' + u.total + ' viagem(s) · chk ' + fPct(u.checkin_pct) + ' · esp ' + fPct(u.esp_pct) + '</div>' +
+          '</div>' +
+          '<div style="text-align:right">' +
+            '<div style="font-size:13px;font-weight:700;color:var(--ink)">' + fPct(u.score) + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
   }
 }
 
 function renderizarComparacaoTransportadoras() {
-  var pctAg = APP_STATE.agendamento.pct_agendado || 0.928;
+  var pctAg = APP_STATE.agendamento.pct_agendado || 0.8889;
   var metaScore = APP_STATE.metas.score;
   var transpMap = {};
 
@@ -1447,20 +1434,20 @@ function renderizarComparacaoTransportadoras() {
     var t = (v.transportadora || '').trim();
     var isUnreg = t === 'A verificar' || t.includes('Terceira') || v.motorista === 'Não vinculado' || v.motorista === 'Não cadastrado' || v.placa === 'S/ Placa';
     var key = isUnreg ? 'A Verificar — Placas Não Cadastradas' : t;
+    var espScore = getViagemScoreEsp(v);
 
     if (!transpMap[key]) {
-      transpMap[key] = { total: 0, checkin: 0, esp: 0, isUnreg: isUnreg, nome: key };
+      transpMap[key] = { total: 0, checkin: 0, espScore: 0, isUnreg: isUnreg, nome: key };
     }
     transpMap[key].total++;
-    var vScoreEsp = (v.score_esp !== undefined && v.score_esp !== null) ? Number(v.score_esp) : (Number(v.is_espelhado) === 1 ? 1.0 : 0.5);
     if (Number(v.checkin_antecipado) === 1) transpMap[key].checkin++;
-    transpMap[key].esp += vScoreEsp;
+    transpMap[key].espScore += espScore;
   });
 
   var transpList = Object.keys(transpMap).map(function(key) {
     var d = transpMap[key];
     var cPct = d.checkin / d.total;
-    var ePct = d.esp / d.total;
+    var ePct = d.espScore / d.total;
     var score = (pctAg + cPct + ePct) / 3;
     return {
       key: key,
@@ -1479,50 +1466,68 @@ function renderizarComparacaoTransportadoras() {
 
   var metaPctStr = Math.round(metaScore * 100) + '%';
 
-  elList.innerHTML = transpList.map(function(t, idx) {
-    var wPct = Math.round(t.score * 100);
-    var isNaMeta = t.score >= metaScore;
-    var badgeMeta = isNaMeta 
-      ? '<span style="font-size:11.5px;color:var(--good);background:var(--good-bg);padding:3px 8px;border-radius:var(--radius)">Na Meta (' + metaPctStr + ')</span>'
-      : '<span style="font-size:11.5px;color:var(--bad);background:var(--bad-bg);padding:3px 8px;border-radius:var(--radius)">Abaixo da Meta (' + metaPctStr + ')</span>';
-    
-    var badgeUnreg = t.isUnreg 
-      ? '<span style="font-size:11.5px;color:var(--warn);background:var(--warn-bg);padding:3px 8px;border-radius:var(--radius)">Pendente de Cadastro</span>'
-      : '';
+  elList.innerHTML = transpList.map(function(t) {
+    var isUp = t.score >= metaScore;
+    var diff = Math.abs((t.score - metaScore) * 100).toFixed(1).replace('.', ',');
+    var statusTxt = isUp ? '▲ ' + diff + ' pp vs meta' : '▼ ' + diff + ' pp vs meta';
+    var statusColor = isUp ? 'var(--good)' : 'var(--bad)';
+    var statusBg = isUp ? 'var(--good-bg)' : 'var(--bad-bg)';
 
-    var barColor = isNaMeta ? 'var(--good)' : (t.score >= 0.7 ? 'var(--acc)' : 'var(--bad)');
-    var chkColor = t.checkin_pct >= APP_STATE.metas.checkin_1h ? 'var(--good)' : (t.checkin_pct >= 0.5 ? 'var(--warn)' : 'var(--bad)');
-    var espColor = t.esp_pct >= APP_STATE.metas.espelhamento ? 'var(--good)' : (t.esp_pct >= 0.7 ? 'var(--warn)' : 'var(--bad)');
-
-    var tripsCountTxt = t.total + (t.total === 1 ? ' viagem' : ' viagens');
-    var titleSuffix = t.isUnreg ? ' (' + tripsCountTxt + ')' : ' (Dedicada · ' + tripsCountTxt + ')';
-
-    return '<div style="background:var(--plane-2);border:var(--bw) solid var(--stroke);border-radius:var(--radius);padding:14px 16px;">' +
-           '  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">' +
-           '    <span style="display:flex;align-items:center;gap:9px;color:var(--ink-2);font-weight:700;font-size:14px;">' +
-           '      <b style="width:20px;height:20px;border-radius:var(--radius);background:var(--plane);border:var(--bw) solid var(--stroke);display:grid;place-items:center;font-size:11px;color:var(--ink-2)">' + (idx + 1) + '</b>' +
-           '      ' + t.nome + titleSuffix +
-           '    </span>' +
-           '    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
-           '      ' + badgeUnreg +
-           '      ' + badgeMeta +
-           '      <b style="font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums">Score: ' + fPct(t.score) + '</b>' +
-           '    </div>' +
-           '  </div>' +
-           '  <div style="height:8px;border-radius:var(--radius);background:var(--track);overflow:hidden;margin-bottom:10px;">' +
-           '    <div style="height:100%;width:' + wPct + '%;background:' + barColor + ';border-radius:var(--radius)"></div>' +
-           '  </div>' +
-           '  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;font-size:11.5px;color:var(--muted);border-top:1px dashed var(--stroke);padding-top:8px;">' +
-           '    <span>Agendamento: <strong style="color:var(--good)">' + fPct(t.ag_pct) + '</strong></span>' +
-           '    <span>Check-in &gt; 1h: <strong style="color:' + chkColor + '">' + fPct(t.checkin_pct) + '</strong></span>' +
-           '    <span>Espelhamento: <strong style="color:' + espColor + '">' + fPct(t.esp_pct) + '</strong></span>' +
-           '  </div>' +
-           '</div>';
+    return '<div style="background:var(--plane-2);border:var(--bw) solid var(--stroke);border-radius:var(--radius);padding:16px 18px;display:flex;flex-direction:column;gap:12px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
+        '<div>' +
+          '<b style="font-size:14px;color:var(--ink);">' + t.nome + '</b>' +
+          '<div style="font-size:11.5px;color:var(--muted);margin-top:2px;">' + t.total + ' viagens auditadas</div>' +
+        '</div>' +
+        '<div style="text-align:right;">' +
+          '<div style="font-size:22px;font-weight:800;color:var(--ink);">' + fPct(t.score) + '</div>' +
+          '<span style="font-size:10.5px;font-weight:700;padding:2px 6px;border-radius:4px;color:' + statusColor + ';background:' + statusBg + '">' + statusTxt + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;border-top:1px dashed var(--stroke);padding-top:10px;">' +
+        '<div>' +
+          '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Agendamento</div>' +
+          '<b style="font-size:12px;color:var(--ink);">' + fPct(t.ag_pct) + '</b>' +
+        '</div>' +
+        '<div>' +
+          '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Check-in &gt; 1h</div>' +
+          '<b style="font-size:12px;color:' + (t.checkin_pct >= APP_STATE.metas.checkin_1h ? 'var(--good)' : 'var(--bad)') + '">' + fPct(t.checkin_pct) + '</b>' +
+        '</div>' +
+        '<div>' +
+          '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Espelhamento</div>' +
+          '<b style="font-size:12px;color:' + (t.esp_pct >= APP_STATE.metas.espelhamento ? 'var(--good)' : 'var(--bad)') + '">' + fPct(t.esp_pct) + '</b>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
   }).join('');
 }
 
 /* ==========================================================================
-   ABA DE COBRANÇA: FILTROS, TABELA E EXPORTAÇÃO
+   NAVEGAÇÃO ENTRE AS 3 ABAS
+   ========================================================================== */
+
+function alternarAba(abaId) {
+  APP_STATE.abaAtiva = abaId;
+  document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content-panel').forEach(p => p.classList.remove('active'));
+
+  if (abaId === 'consolidado') {
+    document.querySelector('.nav-tab-btn:nth-child(1)').classList.add('active');
+    document.getElementById('tab-consolidado').classList.add('active');
+    if (APP_STATE.chartInstance) APP_STATE.chartInstance.resize();
+  } else if (abaId === 'cobranca') {
+    document.querySelector('.nav-tab-btn:nth-child(2)').classList.add('active');
+    document.getElementById('tab-cobranca').classList.add('active');
+    aplicarFiltrosCobranca();
+  } else if (abaId === 'dts') {
+    document.querySelector('.nav-tab-btn:nth-child(3)').classList.add('active');
+    document.getElementById('tab-dts').classList.add('active');
+    aplicarFiltrosDts();
+  }
+}
+
+/* ==========================================================================
+   ABA 2: DETALHAMENTO DE COBRANÇA
    ========================================================================== */
 
 function popularFiltrosCobranca() {
@@ -1557,22 +1562,6 @@ function popularFiltrosCobranca() {
   if (inpFim && maxDate !== '0000-00-00') inpFim.value = maxDate;
 }
 
-function alternarAba(abaId) {
-  APP_STATE.abaAtiva = abaId;
-  document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
-  document.querySelectorAll('.tab-content-panel').forEach(p => p.classList.remove('active'));
-
-  if (abaId === 'consolidado') {
-    document.querySelector('.nav-tab-btn:nth-child(1)').classList.add('active');
-    document.getElementById('tab-consolidado').classList.add('active');
-    if (APP_STATE.chartInstance) APP_STATE.chartInstance.resize();
-  } else {
-    document.querySelector('.nav-tab-btn:nth-child(2)').classList.add('active');
-    document.getElementById('tab-cobranca').classList.add('active');
-    aplicarFiltrosCobranca();
-  }
-}
-
 function aplicarFiltrosCobranca() {
   var transpSel = document.getElementById('filtro-transp') ? document.getElementById('filtro-transp').value : 'TODAS';
   var falhaSel = document.getElementById('filtro-falha') ? document.getElementById('filtro-falha').value : 'TODOS';
@@ -1581,22 +1570,22 @@ function aplicarFiltrosCobranca() {
   var busca = document.getElementById('filtro-busca') ? document.getElementById('filtro-busca').value.toLowerCase().trim() : '';
 
   APP_STATE.viagensFiltradas = APP_STATE.viagens.filter(function(v) {
-    var t = (v.transportadora || '').trim();
-    var isUnreg = t === 'A verificar' || t.includes('Terceira') || v.motorista === 'Não vinculado' || v.motorista === 'Não cadastrado' || v.placa === 'S/ Placa';
-
-    // 1. Filtro Transportadora
-    if (transpSel === 'A_VERIFICAR') {
-      if (!isUnreg) return false;
-    } else if (transpSel !== 'TODAS') {
-      if (t !== transpSel) return false;
+    // Transportadora
+    if (transpSel !== 'TODAS') {
+      if (transpSel === 'A_VERIFICAR') {
+        var t = (v.transportadora || '').trim();
+        var isUnreg = t === 'A verificar' || t.includes('Terceira') || v.motorista === 'Não vinculado' || v.placa === 'S/ Placa';
+        if (!isUnreg) return false;
+      } else if (v.transportadora !== transpSel) {
+        return false;
+      }
     }
 
-    // 2. Filtro Período
-    var dCarreg = v.data_carregamento || '';
-    if (dtInicio && dCarreg < dtInicio) return false;
-    if (dtFim && dCarreg > dtFim) return false;
+    // Período
+    if (dtInicio && v.data_carregamento && v.data_carregamento < dtInicio) return false;
+    if (dtFim && v.data_carregamento && v.data_carregamento > dtFim) return false;
 
-    // 3. Filtro Indicador com Falha
+    // Falhas
     var checkOk = Number(v.checkin_antecipado) === 1;
     var espOk = Number(v.is_espelhado) === 1;
     if (falhaSel === 'NAO_CONFORMES' && (checkOk && espOk)) return false;
@@ -1605,20 +1594,17 @@ function aplicarFiltrosCobranca() {
     if (falhaSel === 'AMBOS_FALHA' && (checkOk || espOk)) return false;
     if (falhaSel === 'CONFORMES' && (!checkOk || !espOk)) return false;
 
-    // 4. Busca Texto (Motorista, Placa, DT, Transportadora)
+    // Busca
     if (busca) {
-      var matchMot = (v.motorista || '').toLowerCase().includes(busca);
-      var matchPlaca = (v.placa || '').toLowerCase().includes(busca);
-      var matchDt = (v.dt || '').toLowerCase().includes(busca);
-      var matchTransp = (v.transportadora || '').toLowerCase().includes(busca);
-      if (!matchMot && !matchPlaca && !matchDt && !matchTransp) return false;
+      var str = ((v.motorista || '') + ' ' + (v.placa || '') + ' ' + (v.dt || '') + ' ' + (v.transportadora || '')).toLowerCase();
+      if (!str.includes(busca)) return false;
     }
 
     return true;
   });
 
   atualizarKpisCobranca();
-  executarOrdenacao();
+  ordenarArrayCobranca();
   APP_STATE.paginaAtual = 1;
   renderizarTabelaCobranca();
 }
@@ -1659,15 +1645,23 @@ function atualizarKpisCobranca() {
   var elChk = document.getElementById('kpi-total-checkin');
   if (elChk) elChk.innerText = checkins;
   var elPctChk = document.getElementById('kpi-pct-checkin');
-  if (elPctChk) elPctChk.innerText = pctCheck + ' (Meta ' + Math.round(APP_STATE.metas.checkin_1h * 100) + '%)';
+  if (elPctChk) elPctChk.innerText = pctCheck + ' (Meta 70%)';
 
   var elEsp = document.getElementById('kpi-total-esp');
   if (elEsp) elEsp.innerText = espelhamentos;
   var elPctEsp = document.getElementById('kpi-pct-esp');
-  if (elPctEsp) elPctEsp.innerText = pctEsp + ' (Meta ' + Math.round(APP_STATE.metas.espelhamento * 100) + '%)';
+  if (elPctEsp) elPctEsp.innerText = pctEsp + ' (Meta 95%)';
 
   var elStatus = document.getElementById('lbl-status-registros');
-  if (elStatus) elStatus.innerText = 'Exibindo ' + total + (total === 1 ? ' viagem filtrada' : ' viagens filtradas');
+  if (elStatus) elStatus.innerText = 'Exibindo ' + total + ' viagem' + (total === 1 ? '' : 'ns') + ' filtrada' + (total === 1 ? '' : 's');
+}
+
+function limparFiltrosCobranca() {
+  if (document.getElementById('filtro-transp')) document.getElementById('filtro-transp').value = 'TODAS';
+  if (document.getElementById('filtro-falha')) document.getElementById('filtro-falha').value = 'TODOS';
+  if (document.getElementById('filtro-busca')) document.getElementById('filtro-busca').value = '';
+  popularFiltrosCobranca();
+  aplicarFiltrosCobranca();
 }
 
 function ordenarTabela(coluna) {
@@ -1677,34 +1671,30 @@ function ordenarTabela(coluna) {
     APP_STATE.colunaOrdenacao = coluna;
     APP_STATE.direcaoOrdenacao = 'asc';
   }
-
-  executarOrdenacao();
+  ordenarArrayCobranca();
   renderizarTabelaCobranca();
 }
 
-function executarOrdenacao() {
-  var colunas = ['data', 'dt', 'motorista', 'placa', 'transportadora', 'checkin', 'espelhamento', 'motivo'];
-  colunas.forEach(function(col) {
-    var icon = document.getElementById('sort-' + col);
+function ordenarArrayCobranca() {
+  var col = APP_STATE.colunaOrdenacao;
+  var dir = APP_STATE.direcaoOrdenacao;
+
+  ['data', 'dt', 'motorista', 'placa', 'transportadora', 'checkin', 'espelhamento', 'motivo'].forEach(function(c) {
+    var icon = document.getElementById('sort-' + c);
     var th = icon ? icon.parentElement : null;
     if (icon && th) {
       th.classList.remove('active-sort');
-      if (col === APP_STATE.colunaOrdenacao) {
+      if (c === col) {
         th.classList.add('active-sort');
-        icon.innerText = APP_STATE.direcaoOrdenacao === 'asc' ? '▲' : '▼';
+        icon.innerText = dir === 'asc' ? '▲' : '▼';
       } else {
         icon.innerText = '↕';
       }
     }
   });
 
-  var col = APP_STATE.colunaOrdenacao;
-  var dir = APP_STATE.direcaoOrdenacao;
-
   APP_STATE.viagensFiltradas.sort(function(a, b) {
-    var valA = '';
-    var valB = '';
-
+    var valA, valB;
     if (col === 'data') { valA = a.data_carregamento || ''; valB = b.data_carregamento || ''; }
     else if (col === 'dt') { valA = a.dt || ''; valB = b.dt || ''; }
     else if (col === 'motorista') { valA = a.motorista || ''; valB = b.motorista || ''; }
@@ -1713,102 +1703,72 @@ function executarOrdenacao() {
     else if (col === 'checkin') { valA = Number(a.checkin_antecipado); valB = Number(b.checkin_antecipado); }
     else if (col === 'espelhamento') { valA = Number(a.is_espelhado); valB = Number(b.is_espelhado); }
     else if (col === 'motivo') { valA = calcularMotivo(a); valB = calcularMotivo(b); }
+    else { valA = ''; valB = ''; }
 
-    if (typeof valA === 'string') {
-      var cmp = valA.localeCompare(valB, 'pt-BR', { numeric: true });
-      return dir === 'asc' ? cmp : -cmp;
-    } else {
-      return dir === 'asc' ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
-    }
+    if (valA < valB) return dir === 'asc' ? -1 : 1;
+    if (valA > valB) return dir === 'asc' ? 1 : -1;
+    return 0;
   });
 }
 
 function renderizarTabelaCobranca() {
   var tbody = document.getElementById('tbody-cobranca');
   if (!tbody) return;
-  tbody.innerHTML = '';
 
   var total = APP_STATE.viagensFiltradas.length;
-  if (total === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);">Nenhuma viagem encontrada com os filtros selecionados.</td></tr>';
-    document.getElementById('pagination-info').innerText = '0 de 0 viagens';
-    document.getElementById('page-num-display').innerText = '0 / 0';
-    document.getElementById('btn-prev-page').disabled = true;
-    document.getElementById('btn-next-page').disabled = true;
-    return;
+  var pag = APP_STATE.paginaAtual;
+  var porPag = APP_STATE.itensPorPagina;
+  var totalPags = Math.ceil(total / porPag) || 1;
+
+  if (pag > totalPags) pag = totalPags;
+  if (pag < 1) pag = 1;
+  APP_STATE.paginaAtual = pag;
+
+  var inicio = (pag - 1) * porPag;
+  var fim = Math.min(inicio + porPag, total);
+  var itens = APP_STATE.viagensFiltradas.slice(inicio, fim);
+
+  if (itens.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);">Nenhuma viagem encontrada para os filtros selecionados</td></tr>';
+  } else {
+    tbody.innerHTML = itens.map(function(v) {
+      var chkOk = Number(v.checkin_antecipado) === 1;
+      var espOk = Number(v.is_espelhado) === 1;
+      var motivo = calcularMotivo(v);
+
+      var badgeChk = chkOk ? '<span class="badge-status ok">✓ OK</span>' : '<span class="badge-status fail">✕ Não fez</span>';
+      var badgeEsp = espOk ? '<span class="badge-status ok">✓ Espelhado</span>' : '<span class="badge-status fail">✕ Não fez</span>';
+
+      var badgeMotivoClass = 'conforme';
+      if (motivo === 'Check-in >1h e Espelhamento') badgeMotivoClass = 'ambos';
+      else if (motivo === 'Check-in >1h') badgeMotivoClass = 'checkin';
+      else if (motivo === 'Espelhamento') badgeMotivoClass = 'esp';
+
+      var badgeMotivo = '<span class="badge-motivo ' + badgeMotivoClass + '">' + (motivo === 'Conforme' ? '✓ Conforme' : '⚠️ ' + motivo) + '</span>';
+
+      return '<tr>' +
+        '<td>' + fData(v.data_carregamento) + '</td>' +
+        '<td style="font-weight:700;color:var(--acc);font-family:monospace;">' + v.dt + '</td>' +
+        '<td style="font-weight:600;">' + (v.motorista || '-') + '</td>' +
+        '<td style="font-family:monospace;">' + (v.placa || '-') + '</td>' +
+        '<td>' + (v.transportadora || '-') + '</td>' +
+        '<td>' + badgeChk + '</td>' +
+        '<td>' + badgeEsp + '</td>' +
+        '<td>' + badgeMotivo + '</td>' +
+      '</tr>';
+    }).join('');
   }
 
-  var totalPaginas = Math.ceil(total / APP_STATE.itensPorPagina);
-  if (APP_STATE.paginaAtual > totalPaginas) APP_STATE.paginaAtual = totalPaginas;
-  if (APP_STATE.paginaAtual < 1) APP_STATE.paginaAtual = 1;
+  var elInfo = document.getElementById('pagination-info');
+  if (elInfo) elInfo.innerText = total > 0 ? 'Mostrando ' + (inicio + 1) + '-' + fim + ' de ' + total + ' viagens' : 'Mostrando 0-0 de 0 viagens';
 
-  var inicio = (APP_STATE.paginaAtual - 1) * APP_STATE.itensPorPagina;
-  var fim = Math.min(inicio + APP_STATE.itensPorPagina, total);
-  var paginaViagens = APP_STATE.viagensFiltradas.slice(inicio, fim);
+  var elPag = document.getElementById('page-num-display');
+  if (elPag) elPag.innerText = pag + ' / ' + totalPags;
 
-  paginaViagens.forEach(function(v) {
-    var tr = document.createElement('tr');
-    var checkOk = Number(v.checkin_antecipado) === 1;
-    var espOk = Number(v.is_espelhado) === 1;
-    var isConforme = checkOk && espOk;
-    var motivo = calcularMotivo(v);
-
-    if (!isConforme) {
-      tr.classList.add('row-nao-conforme');
-    }
-
-    var dataFmt = fData(v.data_carregamento);
-
-    // Badges
-    var badgeCheck = checkOk 
-      ? '<span class="badge-tbl good">✓ OK</span>' 
-      : '<span class="badge-tbl bad">✕ Não fez</span>';
-
-    var badgeEsp = espOk 
-      ? '<span class="badge-tbl good">✓ OK</span>' 
-      : '<span class="badge-tbl bad">✕ Não fez</span>';
-
-    var badgeMotivo = '';
-    if (isConforme) {
-      badgeMotivo = '<span class="badge-tbl good">✓ Conforme</span>';
-    } else if (!checkOk && !espOk) {
-      badgeMotivo = '<span class="badge-tbl bad">⚠️ Check-in &gt; 1h e Espelhamento</span>';
-    } else if (!checkOk) {
-      badgeMotivo = '<span class="badge-tbl warn">⚠️ Check-in &gt; 1h</span>';
-    } else {
-      badgeMotivo = '<span class="badge-tbl warn">⚠️ Espelhamento</span>';
-    }
-
-    // Transportadora
-    var transpDisplay = v.transportadora;
-    var isUnreg = transpDisplay === 'A verificar' || transpDisplay.includes('Terceira') || v.motorista === 'Não vinculado' || v.motorista === 'Não cadastrado' || v.placa === 'S/ Placa';
-    if (isUnreg) {
-      transpDisplay = '<span style="color:var(--warn);font-weight:600;">A verificar</span>';
-    }
-
-    // Motorista (Exatamente o texto lido da planilha)
-    var motDisplay = v.motorista || 'Não cadastrado';
-    if (motDisplay === 'Não cadastrado' || motDisplay === 'Não vinculado' || motDisplay === 'N/I') {
-      motDisplay = '<span style="color:var(--muted);font-style:italic;">Não cadastrado</span>';
-    }
-
-    tr.innerHTML = `
-      <td><strong style="color:var(--ink);">${dataFmt}</strong></td>
-      <td><span style="font-family:var(--mono),monospace;font-size:11.5px;color:var(--acc);">${v.dt}</span></td>
-      <td><strong>${motDisplay}</strong></td>
-      <td><span style="font-family:var(--mono),monospace;font-weight:700;letter-spacing:0.5px;">${v.placa}</span></td>
-      <td>${transpDisplay}</td>
-      <td>${badgeCheck}</td>
-      <td>${badgeEsp}</td>
-      <td>${badgeMotivo}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  document.getElementById('pagination-info').innerText = 'Mostrando ' + (inicio + 1) + '-' + fim + ' de ' + total + (total === 1 ? ' viagem' : ' viagens');
-  document.getElementById('page-num-display').innerText = APP_STATE.paginaAtual + ' / ' + totalPaginas;
-  document.getElementById('btn-prev-page').disabled = APP_STATE.paginaAtual <= 1;
-  document.getElementById('btn-next-page').disabled = APP_STATE.paginaAtual >= totalPaginas;
+  var btnPrev = document.getElementById('btn-prev-page');
+  var btnNext = document.getElementById('btn-next-page');
+  if (btnPrev) btnPrev.disabled = pag <= 1;
+  if (btnNext) btnNext.disabled = pag >= totalPags;
 }
 
 function mudarPagina(delta) {
@@ -1816,112 +1776,328 @@ function mudarPagina(delta) {
   renderizarTabelaCobranca();
 }
 
-function limparFiltrosCobranca() {
-  if (document.getElementById('filtro-transp')) document.getElementById('filtro-transp').value = 'TODAS';
-  if (document.getElementById('filtro-falha')) document.getElementById('filtro-falha').value = 'TODOS';
-  popularFiltrosCobranca();
-  if (document.getElementById('filtro-busca')) document.getElementById('filtro-busca').value = '';
-  APP_STATE.colunaOrdenacao = 'data';
-  APP_STATE.direcaoOrdenacao = 'desc';
-  aplicarFiltrosCobranca();
-}
-
 function exportarCobrancaCSV() {
-  if (!APP_STATE.viagensFiltradas || APP_STATE.viagensFiltradas.length === 0) {
-    alert('Nenhuma viagem filtrada para exportação.');
+  if (APP_STATE.viagensFiltradas.length === 0) {
+    alert('Nenhum dado para exportar');
     return;
   }
-
-  var headers = ['Data', 'DT_FO', 'Motorista', 'Placa', 'Transportadora', 'Checkin_Maior_1h', 'Espelhamento', 'Motivo_Nao_Conformidade', 'Status_Geral'];
-  var linhas = [];
-  linhas.push(headers.join(';'));
-
-  APP_STATE.viagensFiltradas.forEach(function(v) {
-    var checkOk = Number(v.checkin_antecipado) === 1 ? 'OK' : 'Não Fez';
-    var espOk = Number(v.is_espelhado) === 1 ? 'OK' : 'Não Fez';
-    var motivo = calcularMotivo(v);
-    var status = (Number(v.checkin_antecipado) === 1 && Number(v.is_espelhado) === 1) ? 'CONFORME' : 'NÃO CONFORME';
-    var isUnreg = v.transportadora === 'A verificar' || v.transportadora.includes('Terceira') || v.motorista === 'Não vinculado' || v.motorista === 'Não cadastrado' || v.placa === 'S/ Placa';
-    var transp = isUnreg ? 'A verificar' : v.transportadora;
-
-    var linha = [
-      v.data_carregamento,
-      v.dt,
-      '"' + (v.motorista || '').replace(/"/g, '""') + '"',
-      v.placa,
-      '"' + transp.replace(/"/g, '""') + '"',
-      checkOk,
-      espOk,
-      '"' + motivo.replace(/"/g, '""') + '"',
-      status
+  var headers = ['Data', 'DT/FO', 'Motorista', 'Placa', 'Transportadora', 'Check-in >1h', 'Espelhamento', 'Motivo Nao Conformidade'];
+  var rows = APP_STATE.viagensFiltradas.map(function(v) {
+    return [
+      v.data_carregamento || '',
+      v.dt || '',
+      v.motorista || '',
+      v.placa || '',
+      v.transportadora || '',
+      Number(v.checkin_antecipado) === 1 ? 'OK' : 'Nao Fez',
+      Number(v.is_espelhado) === 1 ? 'OK' : 'Nao Fez',
+      calcularMotivo(v)
     ];
-    linhas.push(linha.join(';'));
   });
 
-  var csvContent = '\uFEFF' + linhas.join('\r\n');
-  var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  var url = URL.createObjectURL(blob);
+  var csvContent = 'data:text/csv;charset=utf-8,﻿' + [headers.join(';')].concat(rows.map(e => e.join(';'))).join('\n');
+  var encodedUri = encodeURI(csvContent);
   var link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', 'Detalhamento_Cobranca_ScorePuxada_' + new Date().toISOString().slice(0,10) + '.csv');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', 'Auditoria_Cobranca_ScorePuxada.csv');
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 }
 
-// Tentativa de carregar dados: 1º da API Google Drive (/api/data), 2º de data.json, 3º INITIAL_DATA
-async function carregarDadosETocarDashboard(mostrarAviso) {
-  var btnSync = document.getElementById('btn-sync-drive');
-  if (btnSync && mostrarAviso) {
-    btnSync.innerText = '🔄 Sincronizando...';
-    btnSync.style.opacity = '0.7';
+/* ==========================================================================
+   ABA 3: DT's (APOIO OPERACIONAL)
+   ========================================================================== */
+
+function popularFiltrosDts() {
+  var selTransp = document.getElementById('filtro-dts-transp');
+  var selOrigem = document.getElementById('filtro-dts-origem');
+  if (!selTransp || !selOrigem) return;
+
+  var transportadoras = new Set();
+  var origens = new Set();
+
+  APP_STATE.dts_records.forEach(function(d) {
+    if (d.transportadora) transportadoras.add(d.transportadora);
+    if (d.origem) origens.add(d.origem);
+  });
+
+  var htmlT = '<option value="TODAS">Todas as Transportadoras</option>';
+  Array.from(transportadoras).sort().forEach(function(t) {
+    htmlT += '<option value="' + t + '">' + t + '</option>';
+  });
+  selTransp.innerHTML = htmlT;
+
+  var htmlO = '<option value="TODAS">Todas as Origens</option>';
+  Array.from(origens).sort().forEach(function(o) {
+    htmlO += '<option value="' + o + '">' + o + '</option>';
+  });
+  selOrigem.innerHTML = htmlO;
+}
+
+function aplicarFiltrosDts() {
+  var transpSel = document.getElementById('filtro-dts-transp') ? document.getElementById('filtro-dts-transp').value : 'TODAS';
+  var assocSel = document.getElementById('filtro-dts-assoc') ? document.getElementById('filtro-dts-assoc').value : 'TODAS';
+  var origemSel = document.getElementById('filtro-dts-origem') ? document.getElementById('filtro-dts-origem').value : 'TODAS';
+  var busca = document.getElementById('filtro-dts-busca') ? document.getElementById('filtro-dts-busca').value.toLowerCase().trim() : '';
+
+  APP_STATE.dtsFiltradas = APP_STATE.dts_records.filter(function(d) {
+    if (transpSel !== 'TODAS' && d.transportadora !== transpSel) return false;
+    if (origemSel !== 'TODAS' && d.origem !== origemSel) return false;
+
+    var isAd = Number(d.is_aderente) === 1 || String(d.associacao).toLowerCase() === 'aderente';
+    if (assocSel === 'ADERENTE' && !isAd) return false;
+    if (assocSel === 'NAO_ADERENTE' && isAd) return false;
+
+    if (busca) {
+      var str = ((d.dt || '') + ' ' + (d.placa_cavalo || '') + ' ' + (d.motorista || '') + ' ' + (d.origem || '') + ' ' + (d.destino || '')).toLowerCase();
+      if (!str.includes(busca)) return false;
+    }
+
+    return true;
+  });
+
+  atualizarKpisDts();
+  ordenarArrayDts();
+  APP_STATE.paginaAtualDts = 1;
+  renderizarTabelaDts();
+}
+
+function atualizarKpisDts() {
+  var total = APP_STATE.dtsFiltradas.length;
+  var totalAssoc = 0;
+  var totalSaida = 0;
+  var totalRetorno = 0;
+  var totalParadas = 0;
+  var totalParadasJust = 0;
+
+  APP_STATE.dtsFiltradas.forEach(function(d) {
+    if (Number(d.is_aderente) === 1 || String(d.associacao).toLowerCase() === 'aderente') totalAssoc++;
+    if (String(d.checklist_saida).toLowerCase().includes('aderente') && !String(d.checklist_saida).toLowerCase().includes('não')) totalSaida++;
+    if (String(d.checklist_retorno).toLowerCase().includes('aderente') && !String(d.checklist_retorno).toLowerCase().includes('não')) totalRetorno++;
+    totalParadas += Number(d.paradas_maiores_20min || 0);
+    totalParadasJust += Number(d.paradas_justificadas || 0);
+  });
+
+  var pctAssoc = total > 0 ? (totalAssoc / total * 100).toFixed(1).replace('.', ',') + '%' : '0%';
+  var pctSaida = total > 0 ? (totalSaida / total * 100).toFixed(1).replace('.', ',') + '%' : '0%';
+  var pctRetorno = total > 0 ? (totalRetorno / total * 100).toFixed(1).replace('.', ',') + '%' : '0%';
+
+  var elTot = document.getElementById('kpi-dts-total');
+  if (elTot) elTot.innerText = total;
+
+  var elAssocVal = document.getElementById('kpi-dts-assoc-val');
+  if (elAssocVal) elAssocVal.innerText = totalAssoc;
+  var elAssocPct = document.getElementById('kpi-dts-assoc-pct');
+  if (elAssocPct) elAssocPct.innerText = pctAssoc + ' de aderência';
+
+  var elSaidaVal = document.getElementById('kpi-dts-saida-val');
+  if (elSaidaVal) elSaidaVal.innerText = totalSaida;
+  var elSaidaPct = document.getElementById('kpi-dts-saida-pct');
+  if (elSaidaPct) elSaidaPct.innerText = pctSaida + ' aderente';
+
+  var elParadasVal = document.getElementById('kpi-dts-paradas-val');
+  if (elParadasVal) elParadasVal.innerText = totalParadas;
+  var elParadasSub = document.getElementById('kpi-dts-paradas-sub');
+  if (elParadasSub) elParadasSub.innerText = totalParadasJust + ' justificadas';
+
+  var elRetornoVal = document.getElementById('kpi-dts-retorno-val');
+  if (elRetornoVal) elRetornoVal.innerText = totalRetorno;
+  var elRetornoPct = document.getElementById('kpi-dts-retorno-pct');
+  if (elRetornoPct) elRetornoPct.innerText = pctRetorno + ' aderente';
+
+  var elStatus = document.getElementById('lbl-dts-status-registros');
+  if (elStatus) elStatus.innerText = 'Exibindo ' + total + ' DT\'s registradas';
+}
+
+function limparFiltrosDts() {
+  if (document.getElementById('filtro-dts-transp')) document.getElementById('filtro-dts-transp').value = 'TODAS';
+  if (document.getElementById('filtro-dts-assoc')) document.getElementById('filtro-dts-assoc').value = 'TODAS';
+  if (document.getElementById('filtro-dts-origem')) document.getElementById('filtro-dts-origem').value = 'TODAS';
+  if (document.getElementById('filtro-dts-busca')) document.getElementById('filtro-dts-busca').value = '';
+  popularFiltrosDts();
+  aplicarFiltrosDts();
+}
+
+function ordenarTabelaDts(coluna) {
+  if (APP_STATE.colunaOrdenacaoDts === coluna) {
+    APP_STATE.direcaoOrdenacaoDts = APP_STATE.direcaoOrdenacaoDts === 'asc' ? 'desc' : 'asc';
+  } else {
+    APP_STATE.colunaOrdenacaoDts = coluna;
+    APP_STATE.direcaoOrdenacaoDts = 'asc';
   }
+  ordenarArrayDts();
+  renderizarTabelaDts();
+}
+
+function ordenarArrayDts() {
+  var col = APP_STATE.colunaOrdenacaoDts;
+  var dir = APP_STATE.direcaoOrdenacaoDts;
+
+  ['dt', 'origem', 'destino', 'transportadora', 'motorista', 'placa', 'associacao', 'saida', 'paradas', 'retorno'].forEach(function(c) {
+    var icon = document.getElementById('sort-dts-' + c);
+    var th = icon ? icon.parentElement : null;
+    if (icon && th) {
+      th.classList.remove('active-sort');
+      if (c === col) {
+        th.classList.add('active-sort');
+        icon.innerText = dir === 'asc' ? '▲' : '▼';
+      } else {
+        icon.innerText = '↕';
+      }
+    }
+  });
+
+  APP_STATE.dtsFiltradas.sort(function(a, b) {
+    var valA, valB;
+    if (col === 'dt') { valA = a.dt || ''; valB = b.dt || ''; }
+    else if (col === 'origem') { valA = a.origem || ''; valB = b.origem || ''; }
+    else if (col === 'destino') { valA = a.destino || ''; valB = b.destino || ''; }
+    else if (col === 'transportadora') { valA = a.transportadora || ''; valB = b.transportadora || ''; }
+    else if (col === 'motorista') { valA = a.motorista || ''; valB = b.motorista || ''; }
+    else if (col === 'placa') { valA = a.placa_cavalo || ''; valB = b.placa_cavalo || ''; }
+    else if (col === 'associacao') { valA = a.associacao || ''; valB = b.associacao || ''; }
+    else if (col === 'saida') { valA = a.checklist_saida || ''; valB = b.checklist_saida || ''; }
+    else if (col === 'paradas') { valA = Number(a.paradas_maiores_20min || 0); valB = Number(b.paradas_maiores_20min || 0); }
+    else if (col === 'retorno') { valA = a.checklist_retorno || ''; valB = b.checklist_retorno || ''; }
+    else { valA = ''; valB = ''; }
+
+    if (valA < valB) return dir === 'asc' ? -1 : 1;
+    if (valA > valB) return dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+}
+
+function renderizarTabelaDts() {
+  var tbody = document.getElementById('tbody-dts');
+  if (!tbody) return;
+
+  var total = APP_STATE.dtsFiltradas.length;
+  var pag = APP_STATE.paginaAtualDts;
+  var porPag = APP_STATE.itensPorPaginaDts;
+  var totalPags = Math.ceil(total / porPag) || 1;
+
+  if (pag > totalPags) pag = totalPags;
+  if (pag < 1) pag = 1;
+  APP_STATE.paginaAtualDts = pag;
+
+  var inicio = (pag - 1) * porPag;
+  var fim = Math.min(inicio + porPag, total);
+  var itens = APP_STATE.dtsFiltradas.slice(inicio, fim);
+
+  if (itens.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--muted);">Nenhuma DT encontrada para os filtros selecionados</td></tr>';
+  } else {
+    tbody.innerHTML = itens.map(function(d) {
+      var isAd = Number(d.is_aderente) === 1 || String(d.associacao).toLowerCase() === 'aderente';
+      var badgeAssoc = isAd ? '<span class="badge-status ok">✓ Aderente</span>' : '<span class="badge-status warn">⚠️ ' + (d.associacao || 'Indefinido') + '</span>';
+
+      var saidaOk = String(d.checklist_saida).toLowerCase().includes('aderente') && !String(d.checklist_saida).toLowerCase().includes('não');
+      var badgeSaida = saidaOk ? '<span class="badge-status ok">✓ Aderente</span>' : '<span class="badge-status fail">✕ ' + (d.checklist_saida || 'Não Aderente') + '</span>';
+
+      var retornoOk = String(d.checklist_retorno).toLowerCase().includes('aderente') && !String(d.checklist_retorno).toLowerCase().includes('não');
+      var badgeRetorno = retornoOk ? '<span class="badge-status ok">✓ Aderente</span>' : '<span class="badge-status fail">✕ ' + (d.checklist_retorno || 'Não Aderente') + '</span>';
+
+      var paradasTxt = Number(d.paradas_maiores_20min || 0) > 0 ? '<span style="color:var(--warn);font-weight:700;">' + d.paradas_maiores_20min + ' (' + (d.paradas_justificadas || 0) + ' just.)</span>' : '<span style="color:var(--muted);">0</span>';
+
+      return '<tr>' +
+        '<td style="font-weight:700;color:var(--acc);font-family:monospace;">' + d.dt + '</td>' +
+        '<td>' + (d.origem || '-') + '</td>' +
+        '<td>' + (d.destino || '-') + '</td>' +
+        '<td>' + (d.transportadora || '-') + '</td>' +
+        '<td style="font-weight:600;">' + (d.motorista || '-') + '</td>' +
+        '<td style="font-family:monospace;">' + (d.placa_cavalo || '-') + '</td>' +
+        '<td>' + badgeAssoc + '</td>' +
+        '<td>' + badgeSaida + '</td>' +
+        '<td>' + paradasTxt + '</td>' +
+        '<td>' + badgeRetorno + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  var elInfo = document.getElementById('pagination-dts-info');
+  if (elInfo) elInfo.innerText = total > 0 ? 'Mostrando ' + (inicio + 1) + '-' + fim + ' de ' + total + ' DT\'s' : 'Mostrando 0-0 de 0 DT\'s';
+
+  var elPag = document.getElementById('page-dts-num-display');
+  if (elPag) elPag.innerText = pag + ' / ' + totalPags;
+
+  var btnPrev = document.getElementById('btn-dts-prev-page');
+  var btnNext = document.getElementById('btn-dts-next-page');
+  if (btnPrev) btnPrev.disabled = pag <= 1;
+  if (btnNext) btnNext.disabled = pag >= totalPags;
+}
+
+function mudarPaginaDts(delta) {
+  APP_STATE.paginaAtualDts += delta;
+  renderizarTabelaDts();
+}
+
+function exportarDtsCSV() {
+  if (APP_STATE.dtsFiltradas.length === 0) {
+    alert('Nenhum dado de DT para exportar');
+    return;
+  }
+  var headers = ['DT', 'Origem', 'Destino', 'Transportadora', 'Motorista', 'Placa Cavalo', 'Associacao', 'Checklist Saida', 'Paradas >20min', 'Paradas Justificadas', 'Checklist Retorno'];
+  var rows = APP_STATE.dtsFiltradas.map(function(d) {
+    return [
+      d.dt || '',
+      d.origem || '',
+      d.destino || '',
+      d.transportadora || '',
+      d.motorista || '',
+      d.placa_cavalo || '',
+      d.associacao || '',
+      d.checklist_saida || '',
+      d.paradas_maiores_20min || 0,
+      d.paradas_justificadas || 0,
+      d.checklist_retorno || ''
+    ];
+  });
+
+  var csvContent = 'data:text/csv;charset=utf-8,﻿' + [headers.join(';')].concat(rows.map(e => e.join(';'))).join('\n');
+  var encodedUri = encodeURI(csvContent);
+  var link = document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', 'Base_Operacional_DTs.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+/* ==========================================================================
+   SINCRONIZAÇÃO NUVEM COM GOOGLE DRIVE (API VERCEL)
+   ========================================================================== */
+
+async function sincronizarComDrive() {
+  var btn = document.getElementById('btn-sync-drive');
+  var originalTxt = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Sincronizando...';
 
   try {
-    var resApi = await fetch('/api/data?t=' + Date.now());
-    if (resApi.ok) {
-      var liveData = await resApi.json();
-      renderizarDashboardCompleto(liveData);
-      if (btnSync && mostrarAviso) {
-        btnSync.innerText = '✓ Sincronizado!';
-        setTimeout(() => { btnSync.innerText = '🔄 Sincronizar Drive'; btnSync.style.opacity = '1'; }, 2000);
-      }
-      return;
-    }
-  } catch (e) {
-    console.log('API /api/data indisponível, buscando arquivo local...');
-  }
+    var res = await fetch('/api/data?t=' + Date.now());
+    if (!res.ok) throw new Error('Falha ao obter dados da API (' + res.status + ')');
+    var freshData = await res.json();
+    if (!freshData.viagens || freshData.viagens.length === 0) throw new Error('Dados recebidos vazios');
 
-  try {
-    var res = await fetch('data.json?t=' + Date.now());
-    if (res.ok) {
-      var fileData = await res.json();
-      renderizarDashboardCompleto(fileData);
-      if (btnSync && mostrarAviso) {
-        btnSync.innerText = '✓ Atualizado!';
-        setTimeout(() => { btnSync.innerText = '🔄 Sincronizar Drive'; btnSync.style.opacity = '1'; }, 2000);
-      }
-      return;
-    }
-  } catch (e) {
-    console.log('Ambiente offline/file, utilizando base carregada.');
+    renderizarDashboardCompleto(freshData);
+    btn.innerHTML = '✓ Sincronizado!';
+    setTimeout(() => { btn.innerHTML = originalTxt; btn.disabled = false; }, 2000);
+  } catch (err) {
+    console.error('Erro na sincronização:', err);
+    btn.innerHTML = '⚠️ Erro ao sincronizar';
+    setTimeout(() => { btn.innerHTML = originalTxt; btn.disabled = false; }, 2500);
   }
+}
 
+// Inicialização automática ao carregar
+window.addEventListener('DOMContentLoaded', function() {
   renderizarDashboardCompleto(INITIAL_DATA);
-  if (btnSync && mostrarAviso) {
-    btnSync.innerText = '✓ Base Carregada';
-    setTimeout(() => { btnSync.innerText = '🔄 Sincronizar Drive'; btnSync.style.opacity = '1'; }, 2000);
-  }
-}
+});
 
-function sincronizarComDrive() {
-  carregarDadosETocarDashboard(true);
-}
-
-// Inicialização
-document.addEventListener('DOMContentLoaded', () => carregarDadosETocarDashboard(false));
-carregarDadosETocarDashboard(false);
-
+window.addEventListener('resize', function() {
+  if (APP_STATE.chartInstance) APP_STATE.chartInstance.resize();
+});
 </script>
 </body>
 </html>
