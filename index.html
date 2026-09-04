@@ -13,27 +13,28 @@
    DESIGN SYSTEM PREMIUM AUTOCONTIDO (TEMA ESCURO OFICIAL SCORE DE PUXADA)
    ========================================================================== */
 :root {
-  --bg: #080c14;
-  --plane: rgba(255,255,255,.04);
-  --plane-2: rgba(255,255,255,.02);
-  --plane-hover: rgba(255,255,255,.06);
-  --stroke: rgba(255,255,255,.10);
+  --bg: #07070e;
+  --plane: rgba(255,255,255,.055);
+  --plane-2: rgba(255,255,255,.03);
+  --plane-hover: rgba(255,255,255,.08);
+  --stroke: rgba(255,255,255,.1);
   --stroke-strong: rgba(255,255,255,.18);
-  --ink: #e8edf6;
-  --ink-2: #b8c1d1;
-  --muted: #8a93a5;
-  --acc: #67e8f9;
-  --acc-2: #93c5fd;
-  --good: #6ee7b7;
+  --ink: #f5f6fb;
+  --ink-2: #b8bdd4;
+  --muted: #7c82a0;
+  --acc: #8b5cf6;
+  --acc-2: #22d3ee;
+  --good: #34d399;
   --bad: #fb7185;
   --warn: #fbbf24;
-  --good-bg: rgba(110,231,183,.14);
+  --good-bg: rgba(52,211,153,.14);
   --bad-bg: rgba(251,113,133,.14);
   --warn-bg: rgba(251,191,36,.14);
-  --track: rgba(255,255,255,.06);
-  --radius: 12px;
+  --track: rgba(255,255,255,.09);
+  --grid: rgba(255,255,255,.06);
+  --radius: 14px;
   --bw: 1px;
-  --shadow: 0 4px 24px -1px rgba(0,0,0,.45);
+  --shadow: 0 20px 55px -22px rgba(0,0,0,.8), 0 1px 3px rgba(0,0,0,.5);
 }
 
 * {
@@ -47,12 +48,24 @@ body {
   background-color: var(--bg);
   color: var(--ink);
   min-height: 100vh;
-  padding: 24px;
+  padding: 28px;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(103,232,249,0.06) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(110,231,183,0.04) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(139,92,246,0.07) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(34,211,238,0.05) 0px, transparent 50%);
   -webkit-font-smoothing: antialiased;
 }
+
+section {
+  position: relative;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+section::before {
+  content: ''; position: absolute; left: 16px; right: 16px; top: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--acc), transparent);
+  opacity: .32; pointer-events: none; transition: opacity .2s ease;
+}
+section:hover { transform: translateY(-2px); }
+section:hover::before { opacity: .6; }
 
 .app {
   max-width: 1440px;
@@ -551,13 +564,29 @@ body {
         <!-- GRÁFICO COMBO: EVOLUÇÃO DIÁRIA -->
         <div style="grid-column: span 12">
           <section style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 24px;">
-            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:8px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap;">
               <div>
-                <b style="font-size:14px;font-weight:600;color:var(--ink)">Evolução Diária do Score de Puxada & Volume de Viagens</b>
+                <b style="font-size:15px;font-weight:700;color:var(--ink)">Evolução Diária do Score de Puxada & Volume de Viagens</b>
                 <div id="chart-sub-label" style="font-size:12px;color:var(--muted);margin-top:3px">visão diária contínua por dia de carregamento</div>
               </div>
+              <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);background:var(--plane-2);border:var(--bw) solid var(--stroke);padding:7px 14px;border-radius:var(--radius);">
+                <span style="display:inline-flex;align-items:center;gap:8px;">
+                  <span style="width:12px;height:12px;border-radius:3px;background:linear-gradient(180deg, #67e8f9 0%, rgba(103,232,249,0.3) 100%);display:inline-block;"></span>
+                  <span>Viagens do Dia</span>
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:8px;">
+                  <span style="width:14px;height:3px;background:#6ee7b7;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#6ee7b7;"></span>
+                  </span>
+                  <span>Score de Puxada (%)</span>
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:8px;">
+                  <span style="width:16px;height:2px;border-top:2px dashed #fbbf24;display:inline-block;"></span>
+                  <span id="chart-meta-legend-text">Meta (80%)</span>
+                </span>
+              </div>
             </div>
-            <div id="chart-evolucao-diaria" style="width:100%;height:320px;"></div>
+            <div id="chart-evolucao-diaria" style="width:100%;height:310px;"></div>
           </section>
         </div>
 
@@ -627,7 +656,7 @@ body {
                 <div style="font-size:12px;color:var(--muted);margin-top:3px">aderência ao score de puxada e quebra dos 3 pilares para cobrança</div>
               </div>
             </div>
-            <div id="lista-comparacao-transportadoras" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:14px;"></div>
+            <div id="lista-comparacao-transportadoras" style="display:flex;flex-direction:column;gap:12px;"></div>
           </section>
         </div>
 
@@ -765,7 +794,7 @@ body {
       <div class="cobranca-container">
 
         <!-- KPIS DE DTs -->
-        <div class="cobranca-kpis">
+        <div class="cobranca-kpis" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
           <div class="cobranca-kpi-card">
             <div class="cobranca-kpi-label">Total de DT's Registradas</div>
             <div class="cobranca-kpi-val" id="kpi-dts-total">0</div>
@@ -775,21 +804,6 @@ body {
             <div class="cobranca-kpi-label">Associação Aderente</div>
             <div class="cobranca-kpi-val" id="kpi-dts-assoc-val" style="color:var(--good)">0</div>
             <div class="cobranca-kpi-sub" id="kpi-dts-assoc-pct" style="color:var(--good)">0% de aderência</div>
-          </div>
-          <div class="cobranca-kpi-card">
-            <div class="cobranca-kpi-label">Checklist de Saída</div>
-            <div class="cobranca-kpi-val" id="kpi-dts-saida-val" style="color:var(--bad)">0</div>
-            <div class="cobranca-kpi-sub" id="kpi-dts-saida-pct" style="color:var(--bad)">0% aderente</div>
-          </div>
-          <div class="cobranca-kpi-card">
-            <div class="cobranca-kpi-label">Paradas &gt; 20 min</div>
-            <div class="cobranca-kpi-val" id="kpi-dts-paradas-val" style="color:var(--warn)">0</div>
-            <div class="cobranca-kpi-sub" id="kpi-dts-paradas-sub" style="color:var(--warn)">0 justificadas</div>
-          </div>
-          <div class="cobranca-kpi-card">
-            <div class="cobranca-kpi-label">Checklist de Retorno</div>
-            <div class="cobranca-kpi-val" id="kpi-dts-retorno-val" style="color:var(--bad)">0</div>
-            <div class="cobranca-kpi-sub" id="kpi-dts-retorno-pct" style="color:var(--bad)">0% aderente</div>
           </div>
         </div>
 
@@ -856,9 +870,6 @@ body {
                   <th onclick="ordenarTabelaDts('motorista')">Motorista <span class="sort-icon" id="sort-dts-motorista">↕</span></th>
                   <th onclick="ordenarTabelaDts('placa')">Placa <span class="sort-icon" id="sort-dts-placa">↕</span></th>
                   <th onclick="ordenarTabelaDts('associacao')">Associação <span class="sort-icon" id="sort-dts-associacao">↕</span></th>
-                  <th onclick="ordenarTabelaDts('saida')">Checklist Saída <span class="sort-icon" id="sort-dts-saida">↕</span></th>
-                  <th onclick="ordenarTabelaDts('paradas')">Paradas &gt; 20m <span class="sort-icon" id="sort-dts-paradas">↕</span></th>
-                  <th onclick="ordenarTabelaDts('retorno')">Checklist Retorno <span class="sort-icon" id="sort-dts-retorno">↕</span></th>
                 </tr>
               </thead>
               <tbody id="tbody-dts">
@@ -1224,6 +1235,9 @@ function renderizarGraficoDiario() {
     });
   });
 
+  var metaLegendEl = document.getElementById('chart-meta-legend-text');
+  if (metaLegendEl) metaLegendEl.textContent = 'Meta (' + metaScore + '%)';
+
   var dom = document.getElementById('chart-evolucao-diaria');
   if (!dom) return;
   if (APP_STATE.chartInstance) APP_STATE.chartInstance.dispose();
@@ -1249,17 +1263,13 @@ function renderizarGraficoDiario() {
       }
     },
     legend: {
-      top: 0,
-      right: 10,
-      itemGap: 14,
-      textStyle: { color: '#8a93a5', fontSize: 11 },
-      data: ['Viagens do Dia', 'Score de Puxada (%)', 'Meta (' + metaScore + '%)']
+      show: false
     },
     grid: {
-      top: 36,
-      left: 36,
-      right: 44,
-      bottom: 24,
+      top: 46,
+      left: 14,
+      right: 32,
+      bottom: 12,
       containLabel: true
     },
     xAxis: [{
@@ -1272,6 +1282,15 @@ function renderizarGraficoDiario() {
       {
         type: 'value',
         name: 'Viagens',
+        nameLocation: 'end',
+        nameGap: 14,
+        nameTextStyle: {
+          color: '#8a93a5',
+          fontSize: 11,
+          fontWeight: 600,
+          align: 'left',
+          padding: [0, 0, 0, -4]
+        },
         min: 0,
         axisLine: { show: false },
         splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)', type: 'dashed' } },
@@ -1279,7 +1298,16 @@ function renderizarGraficoDiario() {
       },
       {
         type: 'value',
-        name: 'Score %',
+        name: 'Score (%)',
+        nameLocation: 'end',
+        nameGap: 14,
+        nameTextStyle: {
+          color: '#8a93a5',
+          fontSize: 11,
+          fontWeight: 600,
+          align: 'right',
+          padding: [0, -4, 0, 0]
+        },
         min: 0,
         max: 100,
         axisLine: { show: false },
@@ -1549,36 +1577,50 @@ function renderizarComparacaoTransportadoras() {
 
   var metaPctStr = Math.round(metaScore * 100) + '%';
 
-  elList.innerHTML = transpList.map(function(t) {
+  elList.innerHTML = transpList.map(function(t, idx) {
     var isUp = t.score >= metaScore;
     var diff = Math.abs((t.score - metaScore) * 100).toFixed(1).replace('.', ',');
     var statusTxt = isUp ? '▲ ' + diff + ' pp vs meta' : '▼ ' + diff + ' pp vs meta';
     var statusColor = isUp ? 'var(--good)' : 'var(--bad)';
     var statusBg = isUp ? 'var(--good-bg)' : 'var(--bad-bg)';
+    var progWidth = Math.min(100, Math.max(0, t.score * 100)).toFixed(1);
+    var barColor = isUp ? 'var(--good)' : (t.score >= 0.7 ? 'var(--warn)' : 'var(--bad)');
 
-    return '<div style="background:var(--plane-2);border:var(--bw) solid var(--stroke);border-radius:var(--radius);padding:16px 18px;display:flex;flex-direction:column;gap:12px;">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
-        '<div>' +
-          '<b style="font-size:14px;color:var(--ink);">' + t.nome + '</b>' +
-          '<div style="font-size:11.5px;color:var(--muted);margin-top:2px;">' + t.total + ' viagens auditadas</div>' +
+    return '<div style="background:var(--plane-2);border:var(--bw) solid var(--stroke);border-radius:var(--radius);padding:16px 20px;display:flex;flex-direction:column;gap:14px;">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">' +
+        '<div style="display:flex;align-items:center;gap:14px;min-width:220px;">' +
+          '<b style="width:34px;height:34px;border-radius:var(--radius);background:var(--plane);border:var(--bw) solid var(--stroke);display:grid;place-items:center;font-size:13.5px;font-weight:800;color:var(--ink);flex-shrink:0;">' + (idx + 1) + 'º</b>' +
+          '<div>' +
+            '<div style="font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-.2px;">' + t.nome + '</div>' +
+            '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' + t.total + ' viagens auditadas</div>' +
+          '</div>' +
         '</div>' +
-        '<div style="text-align:right;">' +
-          '<div style="font-size:22px;font-weight:800;color:var(--ink);">' + fPct(t.score) + '</div>' +
-          '<span style="font-size:10.5px;font-weight:700;padding:2px 6px;border-radius:4px;color:' + statusColor + ';background:' + statusBg + '">' + statusTxt + '</span>' +
+        '<div style="flex:1;min-width:180px;max-width:340px;">' +
+          '<div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-bottom:6px;">' +
+            '<span>Aderência Geral</span>' +
+            '<span style="font-weight:700;color:var(--ink);">' + fPct(t.score) + '</span>' +
+          '</div>' +
+          '<div style="height:8px;border-radius:var(--radius);background:var(--track);overflow:hidden;position:relative;">' +
+            '<div style="height:100%;width:' + progWidth + '%;background:' + barColor + ';border-radius:var(--radius);"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align:right;min-width:130px;">' +
+          '<div style="font-size:24px;font-weight:800;letter-spacing:-.8px;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums;">' + fPct(t.score) + '</div>' +
+          '<div style="margin-top:5px;"><span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:var(--radius);color:' + statusColor + ';background:' + statusBg + '">' + statusTxt + '</span></div>' +
         '</div>' +
       '</div>' +
-      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;border-top:1px dashed var(--stroke);padding-top:10px;">' +
-        '<div>' +
-          '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Agendamento</div>' +
-          '<b style="font-size:12px;color:var(--ink);">' + fPct(t.ag_pct) + '</b>' +
+      '<div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;border-top:1px dashed var(--stroke);padding-top:12px;">' +
+        '<div style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:8px;padding:8px 12px;">' +
+          '<div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;">Agendamento</div>' +
+          '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-top:2px;">' + fPct(t.ag_pct) + '</div>' +
         '</div>' +
-        '<div>' +
-          '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Check-in &gt; 1h</div>' +
-          '<b style="font-size:12px;color:' + (t.checkin_pct >= APP_STATE.metas.checkin_1h ? 'var(--good)' : 'var(--bad)') + '">' + fPct(t.checkin_pct) + '</b>' +
+        '<div style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:8px;padding:8px 12px;">' +
+          '<div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;">Check-in &gt; 1h</div>' +
+          '<div style="font-size:14px;font-weight:700;color:' + (t.checkin_pct >= APP_STATE.metas.checkin_1h ? 'var(--good)' : 'var(--bad)') + ';margin-top:2px;">' + fPct(t.checkin_pct) + '</div>' +
         '</div>' +
-        '<div>' +
-          '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Espelhamento</div>' +
-          '<b style="font-size:12px;color:' + (t.esp_pct >= APP_STATE.metas.espelhamento ? 'var(--good)' : 'var(--bad)') + '">' + fPct(t.esp_pct) + '</b>' +
+        '<div style="background:var(--plane);border:var(--bw) solid var(--stroke);border-radius:8px;padding:8px 12px;">' +
+          '<div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;">Espelhamento</div>' +
+          '<div style="font-size:14px;font-weight:700;color:' + (t.esp_pct >= APP_STATE.metas.espelhamento ? 'var(--good)' : 'var(--bad)') + ';margin-top:2px;">' + fPct(t.esp_pct) + '</div>' +
         '</div>' +
       '</div>' +
     '</div>';
@@ -1956,15 +1998,9 @@ function atualizarKpisDts() {
 
   APP_STATE.dtsFiltradas.forEach(function(d) {
     if (Number(d.is_aderente) === 1 || String(d.associacao).toLowerCase() === 'aderente') totalAssoc++;
-    if (String(d.checklist_saida).toLowerCase().includes('aderente') && !String(d.checklist_saida).toLowerCase().includes('não')) totalSaida++;
-    if (String(d.checklist_retorno).toLowerCase().includes('aderente') && !String(d.checklist_retorno).toLowerCase().includes('não')) totalRetorno++;
-    totalParadas += Number(d.paradas_maiores_20min || 0);
-    totalParadasJust += Number(d.paradas_justificadas || 0);
   });
 
   var pctAssoc = total > 0 ? (totalAssoc / total * 100).toFixed(1).replace('.', ',') + '%' : '0%';
-  var pctSaida = total > 0 ? (totalSaida / total * 100).toFixed(1).replace('.', ',') + '%' : '0%';
-  var pctRetorno = total > 0 ? (totalRetorno / total * 100).toFixed(1).replace('.', ',') + '%' : '0%';
 
   var elTot = document.getElementById('kpi-dts-total');
   if (elTot) elTot.innerText = total;
@@ -1973,21 +2009,6 @@ function atualizarKpisDts() {
   if (elAssocVal) elAssocVal.innerText = totalAssoc;
   var elAssocPct = document.getElementById('kpi-dts-assoc-pct');
   if (elAssocPct) elAssocPct.innerText = pctAssoc + ' de aderência';
-
-  var elSaidaVal = document.getElementById('kpi-dts-saida-val');
-  if (elSaidaVal) elSaidaVal.innerText = totalSaida;
-  var elSaidaPct = document.getElementById('kpi-dts-saida-pct');
-  if (elSaidaPct) elSaidaPct.innerText = pctSaida + ' aderente';
-
-  var elParadasVal = document.getElementById('kpi-dts-paradas-val');
-  if (elParadasVal) elParadasVal.innerText = totalParadas;
-  var elParadasSub = document.getElementById('kpi-dts-paradas-sub');
-  if (elParadasSub) elParadasSub.innerText = totalParadasJust + ' justificadas';
-
-  var elRetornoVal = document.getElementById('kpi-dts-retorno-val');
-  if (elRetornoVal) elRetornoVal.innerText = totalRetorno;
-  var elRetornoPct = document.getElementById('kpi-dts-retorno-pct');
-  if (elRetornoPct) elRetornoPct.innerText = pctRetorno + ' aderente';
 
   var elStatus = document.getElementById('lbl-dts-status-registros');
   if (elStatus) elStatus.innerText = 'Exibindo ' + total + ' DT\'s registradas';
@@ -2017,7 +2038,7 @@ function ordenarArrayDts() {
   var col = APP_STATE.colunaOrdenacaoDts;
   var dir = APP_STATE.direcaoOrdenacaoDts;
 
-  ['dt', 'origem', 'destino', 'transportadora', 'motorista', 'placa', 'associacao', 'saida', 'paradas', 'retorno'].forEach(function(c) {
+  ['dt', 'origem', 'destino', 'transportadora', 'motorista', 'placa', 'associacao'].forEach(function(c) {
     var icon = document.getElementById('sort-dts-' + c);
     var th = icon ? icon.parentElement : null;
     if (icon && th) {
@@ -2040,9 +2061,6 @@ function ordenarArrayDts() {
     else if (col === 'motorista') { valA = a.motorista || ''; valB = b.motorista || ''; }
     else if (col === 'placa') { valA = a.placa_cavalo || ''; valB = b.placa_cavalo || ''; }
     else if (col === 'associacao') { valA = a.associacao || ''; valB = b.associacao || ''; }
-    else if (col === 'saida') { valA = a.checklist_saida || ''; valB = b.checklist_saida || ''; }
-    else if (col === 'paradas') { valA = Number(a.paradas_maiores_20min || 0); valB = Number(b.paradas_maiores_20min || 0); }
-    else if (col === 'retorno') { valA = a.checklist_retorno || ''; valB = b.checklist_retorno || ''; }
     else { valA = ''; valB = ''; }
 
     if (valA < valB) return dir === 'asc' ? -1 : 1;
@@ -2069,19 +2087,11 @@ function renderizarTabelaDts() {
   var itens = APP_STATE.dtsFiltradas.slice(inicio, fim);
 
   if (itens.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--muted);">Nenhuma DT encontrada para os filtros selecionados</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted);">Nenhuma DT encontrada para os filtros selecionados</td></tr>';
   } else {
     tbody.innerHTML = itens.map(function(d) {
       var isAd = Number(d.is_aderente) === 1 || String(d.associacao).toLowerCase() === 'aderente';
       var badgeAssoc = isAd ? '<span class="badge-status ok">✓ Aderente</span>' : '<span class="badge-status warn">⚠️ ' + (d.associacao || 'Indefinido') + '</span>';
-
-      var saidaOk = String(d.checklist_saida).toLowerCase().includes('aderente') && !String(d.checklist_saida).toLowerCase().includes('não');
-      var badgeSaida = saidaOk ? '<span class="badge-status ok">✓ Aderente</span>' : '<span class="badge-status fail">✕ ' + (d.checklist_saida || 'Não Aderente') + '</span>';
-
-      var retornoOk = String(d.checklist_retorno).toLowerCase().includes('aderente') && !String(d.checklist_retorno).toLowerCase().includes('não');
-      var badgeRetorno = retornoOk ? '<span class="badge-status ok">✓ Aderente</span>' : '<span class="badge-status fail">✕ ' + (d.checklist_retorno || 'Não Aderente') + '</span>';
-
-      var paradasTxt = Number(d.paradas_maiores_20min || 0) > 0 ? '<span style="color:var(--warn);font-weight:700;">' + d.paradas_maiores_20min + ' (' + (d.paradas_justificadas || 0) + ' just.)</span>' : '<span style="color:var(--muted);">0</span>';
 
       return '<tr>' +
         '<td style="font-weight:700;color:var(--acc);font-family:monospace;">' + d.dt + '</td>' +
@@ -2091,9 +2101,6 @@ function renderizarTabelaDts() {
         '<td style="font-weight:600;">' + (d.motorista || '-') + '</td>' +
         '<td style="font-family:monospace;">' + (d.placa_cavalo || '-') + '</td>' +
         '<td>' + badgeAssoc + '</td>' +
-        '<td>' + badgeSaida + '</td>' +
-        '<td>' + paradasTxt + '</td>' +
-        '<td>' + badgeRetorno + '</td>' +
       '</tr>';
     }).join('');
   }
