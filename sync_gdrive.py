@@ -19,7 +19,8 @@ except Exception:
 GDRIVE_FILES = {
     "agendamento": "192WucjsTnTu5iB5LNTkQqS9RGHlIZbZD",
     "espelhamento": "1KO8r6YmPMsksCrX3lM5zhXr2nRvf1nuf",
-    "motoristas": "13Qs0yl8V6OukgJ2qHMwMZkMmbZqCQZHD"
+    "motoristas": "13Qs0yl8V6OukgJ2qHMwMZkMmbZqCQZHD",
+    "dts": "1_edk72CGLWSob-ehIs4k5lN4jzLjlnBf"
 }
 
 def download_drive_file(file_id, is_xlsx=True):
@@ -201,6 +202,108 @@ def process_gdrive_data():
             "data_carregamento": data_str
         })
 
+    # 5. Carregar DTs (Google Drive ou Local)
+    dts_records = []
+    f_dts = None
+    if GDRIVE_FILES.get("dts"):
+        try:
+            f_dts = download_drive_file(GDRIVE_FILES["dts"], is_xlsx=True)
+        except Exception as err:
+            print("Aviso: falha ao baixar DTs do Drive, tentando local:", err)
+
+    if f_dts is None:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        for cand in ['DTs.xlsx', 'dts.xlsx', 'DTS.xlsx']:
+            lp = os.path.join(base_dir, cand)
+            if os.path.exists(lp):
+                f_dts = lp
+                break
+
+    if f_dts:
+        try:
+            df_dts = pd.read_excel(f_dts, sheet_name='Export') if isinstance(f_dts, str) else pd.read_excel(f_dts)
+            
+            def get_col_val(row, *keywords):
+                for k in row.keys():
+                    k_clean = str(k).lower().replace('\ufffd', '').strip()
+                    for kw in keywords:
+                        if kw.lower() in k_clean:
+                            val = row[k]
+                            if pd.isna(val): return ''
+                            val_str = str(val).strip()
+                            val_str = val_str.replace('\ufffd', 'ã').replace('N?o', 'Não')
+                            return val_str
+                return ''
+
+            df_dts_clean = df_dts[
+                df_dts.iloc[:, 0].notna() & 
+                (~df_dts.iloc[:, 0].astype(str).str.startswith('Filtros'))
+            ].copy()
+
+            for _, r in df_dts_clean.iterrows():
+                dt_raw = str(r.iloc[0]).strip().replace('.0', '')
+                if not dt_raw or dt_raw.lower() == 'nan':
+                    continue
+
+                origem_val = get_col_val(r, 'origem') or 'N/I'
+                destino_val = get_col_val(r, 'destino') or 'DISSOBEL/SOBRAL(CE)'
+                transp_dts = get_col_val(r, 'transportadora')
+                placa_val = get_col_val(r, 'placa').upper().replace('-', '')
+                usuario_emb = get_col_val(r, 'embarcado', 'usu') or 'Não embarcado'
+                if 'embarcado' in usuario_emb.lower() and ('n' in usuario_emb.lower()[:3] or 'ñ' in usuario_emb.lower()[:3]):
+                    usuario_emb = 'Não embarcado'
+
+                assoc_val = get_col_val(r, 'associa') or 'Indefinido'
+                fonte_val = get_col_val(r, 'fonte') or 'Indefinido'
+
+                chk_saida = get_col_val(r, 'checklist sa', 'saida', 'sada') or 'Não Aderente'
+                if 'aderente' in chk_saida.lower() and ('n' in chk_saida.lower()[:3] or 'ñ' in chk_saida.lower()[:3]):
+                    chk_saida = 'Não Aderente'
+
+                chk_retorno = get_col_val(r, 'retorno') or 'Não Aderente'
+                if 'aderente' in chk_retorno.lower() and ('n' in chk_retorno.lower()[:3] or 'ñ' in chk_retorno.lower()[:3]):
+                    chk_retorno = 'Não Aderente'
+
+                try:
+                    paradas_20 = int(float(get_col_val(r, 'maiores que 20', '20min') or 0))
+                except:
+                    paradas_20 = 0
+
+                try:
+                    paradas_just = int(float(get_col_val(r, 'justificadas') or 0))
+                except:
+                    paradas_just = 0
+
+                driver_info = placa_to_driver.get(placa_val, None)
+                if driver_info:
+                    mot_name = driver_info["motorista"]
+                    transp_name = driver_info["transportadora"]
+                else:
+                    mot_name = "Não vinculado"
+                    transp_name = "Dedicada / Não cadastrado"
+
+                is_aderente = 1 if assoc_val.strip().lower() == 'aderente' else 0
+
+                dts_records.append({
+                    "dt": dt_raw,
+                    "origem": origem_val,
+                    "destino": destino_val,
+                    "transportadora_dts": transp_dts,
+                    "transportadora": transp_name,
+                    "motorista": mot_name,
+                    "placa_cavalo": placa_val,
+                    "usuario_embarcado": usuario_emb,
+                    "associacao": assoc_val,
+                    "is_aderente": is_aderente,
+                    "fonte_associacao": fonte_val,
+                    "checklist_saida": chk_saida,
+                    "paradas_maiores_20min": paradas_20,
+                    "paradas_justificadas": paradas_just,
+                    "checklist_retorno": chk_retorno
+                })
+        except Exception as e:
+            print("Aviso: erro ao processar dts:", e)
+
     result = {
         "generated_at": pd.Timestamp.now().isoformat(),
         "source": "Google Drive",
@@ -208,6 +311,7 @@ def process_gdrive_data():
         "geo": "GEO NO",
         "agendamento_summary": ag_data,
         "viagens": viagens,
+        "dts_records": dts_records,
         "metas": {
             "agendamento": 0.90,
             "checkin_1h": 0.70,

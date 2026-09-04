@@ -3,10 +3,12 @@ const XLSX = require('xlsx');
 const GDRIVE_FILES = {
   agendamento: "192WucjsTnTu5iB5LNTkQqS9RGHlIZbZD",
   espelhamento: "1KO8r6YmPMsksCrX3lM5zhXr2nRvf1nuf",
-  motoristas: "13Qs0yl8V6OukgJ2qHMwMZkMmbZqCQZHD"
+  motoristas: "13Qs0yl8V6OukgJ2qHMwMZkMmbZqCQZHD",
+  dts: "1_edk72CGLWSob-ehIs4k5lN4jzLjlnBf"
 };
 
 async function downloadDriveBuffer(fileId) {
+  if (!fileId) return null;
   const url1 = `https://drive.google.com/uc?export=download&id=${fileId}`;
   const url2 = `https://drive.usercontent.google.com/download?id=${fileId}&export=download`;
   
@@ -50,11 +52,16 @@ function parseCSV(text) {
 
 async function fetchAndProcessData() {
   // 1. Download de todos os arquivos em paralelo para velocidade máxima
-  const [bufAg, bufEsp, bufMot] = await Promise.all([
+  const promises = [
     downloadDriveBuffer(GDRIVE_FILES.agendamento),
     downloadDriveBuffer(GDRIVE_FILES.espelhamento),
     downloadDriveBuffer(GDRIVE_FILES.motoristas)
-  ]);
+  ];
+  if (GDRIVE_FILES.dts) {
+    promises.push(downloadDriveBuffer(GDRIVE_FILES.dts).catch(() => null));
+  }
+
+  const [bufAg, bufEsp, bufMot, bufDts] = await Promise.all(promises);
 
   // 2. Processar Motoristas
   const motText = bufMot.toString('utf-8');
@@ -76,13 +83,20 @@ async function fetchAndProcessData() {
 
   // 3. Processar Agendamento
   const wbAg = XLSX.read(bufAg, { type: 'buffer' });
-  const sheetAg = wbAg.Sheets[wbAg.SheetNames[0]];
+  let agSheetName = wbAg.SheetNames[0];
+  for (const s of wbAg.SheetNames) {
+    if (s.toLowerCase().includes('carreg') || s.toLowerCase().includes('export')) {
+      agSheetName = s;
+      break;
+    }
+  }
+  const sheetAg = wbAg.Sheets[agSheetName];
   const agRows = XLSX.utils.sheet_to_json(sheetAg, { defval: '' });
   
   const cleanAg = agRows.filter(r => {
     const rev = String(r['Revendas'] || '').toLowerCase();
-    const c1 = String(Object.values(r)[0] || '');
-    return rev && rev !== 'total' && !c1.startsWith('Filtros');
+    const c1 = String(Object.values(r)[0] || '').toLowerCase();
+    return rev !== 'total' && c1 !== 'total' && !c1.startsWith('filtros');
   });
 
   let rowAg = cleanAg.find(r => {
@@ -112,43 +126,42 @@ async function fetchAndProcessData() {
   const sheetEsp = wbEsp.Sheets[wbEsp.SheetNames[0]];
   const espRows = XLSX.utils.sheet_to_json(sheetEsp, { defval: '' });
 
+  const cleanEsp = espRows.filter(r => {
+    const dt = String(r['DT/FO'] || r['DT'] || '');
+    const c1 = String(Object.values(r)[0] || '');
+    return dt && dt !== 'total' && !c1.startsWith('Filtros') && !dt.startsWith('Filtros');
+  });
+
   const viagens = [];
-  for (const r of espRows) {
-    const keys = Object.keys(r);
-    const dtKey = keys.find(k => k.toUpperCase().includes('DT')) || 'DT/FO';
-    const dataKey = keys.find(k => k.toUpperCase().includes('DATA')) || 'Data Carreg.';
-    
-    const dtVal = String(r[dtKey] || '').trim();
-    if (!dtVal || dtVal.startsWith('Filtros') || dtVal.toLowerCase() === 'total') continue;
+  for (const r of cleanEsp) {
+    const dtVal = String(r['DT/FO'] || r['DT'] || '').trim();
+    const placaRaw = String(r['Placa'] || '').trim().toUpperCase().replace(/\.0$/, '');
+    const pClean = placaRaw.replace(/[- ]/g, '').toUpperCase();
+    const driver = placaToDriver[pClean] || { motorista: 'Não vinculado', transportadora: 'DISSOBEL / Terceira' };
 
-    const placaRaw = String(r['Placa'] || '').replace(/\.0$/, '').trim().toUpperCase();
-    const pClean = placaRaw.replace(/[- ]/g, '');
-    const driverInfo = placaToDriver[pClean];
-
-    const motorista = driverInfo ? driverInfo.motorista : 'Não vinculado';
-    const transportadora = driverInfo ? driverInfo.transportadora : 'DISSOBEL / Terceira';
+    const motorista = driver.motorista;
+    const transportadora = driver.transportadora;
 
     // Check-in Antecipado
-    const chkVal = r['Check-in Antecipado'];
     let isCheckin = 0;
+    const chkVal = r['Check-in Antecipado'];
     if (chkVal !== undefined && chkVal !== null && chkVal !== '') {
       if (typeof chkVal === 'number') {
         isCheckin = chkVal >= 0.5 ? 1 : 0;
       } else {
-        const chkTxt = String(chkVal || '').trim().toLowerCase();
+        const chkTxt = String(chkVal).trim().toLowerCase();
         const hasNegative = chkTxt.includes('nao') || chkTxt.includes('não') || chkTxt.includes('sem') || chkTxt.includes('fora') || chkTxt.includes('atrasado') || chkTxt.startsWith('0');
-        isCheckin = (!hasNegative && (chkTxt === '1' || chkTxt === '1.0' || chkTxt === 'sim' || chkTxt === 'ok' || chkTxt === 'conforme' || chkTxt === 'true' || chkTxt.includes('conforme'))) ? 1 : 0;
+        isCheckin = (!hasNegative && (chkTxt === '1' || chkTxt === '1.0' || chkTxt === 'sim' || chkTxt === 'ok' || chkTxt === 'conforme' || chkTxt === 'true')) ? 1 : 0;
       }
     }
 
     // Espelhamento
-    const espVal = r['Espelhamento'];
     let isEsp = 0;
     let espStr = 'Nao Espelhado';
+    const espVal = r['Espelhamento'];
     if (espVal !== undefined && espVal !== null && espVal !== '') {
       if (typeof espVal === 'number') {
         isEsp = espVal >= 0.5 ? 1 : 0;
-        espStr = isEsp ? 'Espelhado' : 'Nao Espelhado';
       } else {
         const espTxt = String(espVal || '').trim().toLowerCase();
         const hasNegative = espTxt.includes('nao') || espTxt.includes('não') || espTxt.includes('sem') || espTxt.includes('fora') || espTxt.includes('desconectado') || espTxt.startsWith('0');
@@ -158,10 +171,9 @@ async function fetchAndProcessData() {
     }
 
     let dataStr = '';
-    const rawDate = r[dataKey];
+    const rawDate = r['Data Carreg.'] || r['Data'] || '';
     if (rawDate) {
       if (typeof rawDate === 'number') {
-        // Excel serial date to JS Date
         const dateObj = new Date((rawDate - 25569) * 86400 * 1000);
         dataStr = dateObj.toISOString().slice(0, 10);
       } else {
@@ -191,6 +203,56 @@ async function fetchAndProcessData() {
     });
   }
 
+  // 5. Processar DTs
+  const dts_records = [];
+  if (bufDts) {
+    try {
+      const wbDts = XLSX.read(bufDts, { type: 'buffer' });
+      const sheetDts = wbDts.Sheets[wbDts.SheetNames[0]];
+      const dtsRows = XLSX.utils.sheet_to_json(sheetDts, { defval: '' });
+
+      function getVal(row, ...keys) {
+        for (const k of Object.keys(row)) {
+          const kNorm = k.toLowerCase().replace(/[\ufffd_]/g, '');
+          for (const cand of keys) {
+            if (kNorm.includes(cand)) return String(row[k]).trim();
+          }
+        }
+        return '';
+      }
+
+      for (const r of dtsRows) {
+        const dtRaw = String(Object.values(r)[0] || '').replace(/\.0$/, '').trim();
+        if (!dtRaw || dtRaw.toLowerCase() === 'nan' || dtRaw.toLowerCase().startsWith('filtros')) continue;
+
+        const placaVal = getVal(r, 'placa').toUpperCase().replace(/[- ]/g, '');
+        const driver = placaToDriver[placaVal] || { motorista: 'Não vinculado', transportadora: 'Dedicada / Não cadastrado' };
+        const assocVal = getVal(r, 'associa') || 'Indefinido';
+        const isAderente = assocVal.toLowerCase() === 'aderente' ? 1 : 0;
+
+        dts_records.push({
+          dt: dtRaw,
+          origem: getVal(r, 'origem') || 'N/I',
+          destino: getVal(r, 'destino') || 'DISSOBEL/SOBRAL(CE)',
+          transportadora_dts: getVal(r, 'transportadora'),
+          transportadora: driver.transportadora,
+          motorista: driver.motorista,
+          placa_cavalo: placaVal,
+          usuario_embarcado: getVal(r, 'embarcado', 'usu') || 'Não embarcado',
+          associacao: assocVal,
+          is_aderente: isAderente,
+          fonte_associacao: getVal(r, 'fonte') || 'Indefinido',
+          checklist_saida: getVal(r, 'checklist sa', 'saida') || 'Não Aderente',
+          paradas_maiores_20min: parseInt(getVal(r, '20min', 'maiores que 20') || '0', 10) || 0,
+          paradas_justificadas: parseInt(getVal(r, 'justificadas') || '0', 10) || 0,
+          checklist_retorno: getVal(r, 'retorno') || 'Não Aderente'
+        });
+      }
+    } catch (e) {
+      console.error('Erro ao processar dts buffer:', e);
+    }
+  }
+
   return {
     generated_at: new Date().toISOString(),
     source: "Google Drive Live",
@@ -198,6 +260,7 @@ async function fetchAndProcessData() {
     geo: "GEO NO",
     agendamento_summary: agSummary,
     viagens,
+    dts_records,
     metas: {
       agendamento: 0.90,
       checkin_1h: 0.70,
