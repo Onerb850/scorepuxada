@@ -64,17 +64,37 @@ async function fetchAndProcessData() {
   const [bufAg, bufEsp, bufMot, bufDts] = await Promise.all(promises);
 
   // 2. Processar Motoristas
-  const motText = bufMot.toString('utf-8');
-  const motRows = parseCSV(motText);
+  let motRows = [];
+  try {
+    if (bufMot && bufMot[0] === 0x50 && bufMot[1] === 0x4B) {
+      const wbMot = XLSX.read(bufMot, { type: 'buffer' });
+      const sheetMot = wbMot.Sheets[wbMot.SheetNames[0]];
+      motRows = XLSX.utils.sheet_to_json(sheetMot, { defval: '' });
+    } else {
+      const motText = bufMot.toString('utf-8');
+      motRows = parseCSV(motText);
+    }
+  } catch (e) {
+    try {
+      const motText = bufMot.toString('utf-8');
+      motRows = parseCSV(motText);
+    } catch (err) {}
+  }
+
   const placaToDriver = {};
   for (const r of motRows) {
-    const nome = (r['MOTORISTA'] || '').trim();
-    const placasStr = (r['PLACAS ATIVAS'] || '').toString();
-    const transp = (r['TRANSPORTADORA'] || 'Dedicada').trim();
+    const keys = Object.keys(r);
+    const colMot = keys.find(k => /motorista|condutor|nome/i.test(k)) || 'MOTORISTA';
+    const colPlaca = keys.find(k => /placa/i.test(k)) || 'PLACAS ATIVAS';
+    const colTransp = keys.find(k => /transp/i.test(k)) || 'TRANSPORTADORA';
+
+    const nome = String(r[colMot] || '').trim();
+    const placasStr = String(r[colPlaca] || '');
+    const transp = String(r[colTransp] || 'Dedicada').trim();
     
     const placas = placasStr.replace(/[\/;]/g, ',').split(',')
       .map(p => p.trim().replace(/[- ]/g, '').toUpperCase())
-      .filter(p => p.length >= 6);
+      .filter(p => p.length >= 6 && p !== 'NAN');
       
     for (const p of placas) {
       placaToDriver[p] = { motorista: nome, transportadora: transp };
@@ -155,9 +175,10 @@ async function fetchAndProcessData() {
       }
     }
 
-    // Espelhamento
+    // Espelhamento (Coluna H e Score Esp. Coluna K)
     let isEsp = 0;
     let espStr = 'Nao Espelhado';
+    let scoreEsp = 0.5;
     const espVal = r['Espelhamento'];
     if (espVal !== undefined && espVal !== null && espVal !== '') {
       if (typeof espVal === 'number') {
@@ -166,8 +187,12 @@ async function fetchAndProcessData() {
         const espTxt = String(espVal || '').trim().toLowerCase();
         const hasNegative = espTxt.includes('nao') || espTxt.includes('não') || espTxt.includes('sem') || espTxt.includes('fora') || espTxt.includes('desconectado') || espTxt.startsWith('0');
         isEsp = (!hasNegative && (espTxt === 'espelhado' || espTxt === 'ok' || espTxt === 'sim' || espTxt === 'conforme' || espTxt === '1' || espTxt === '1.0' || espTxt.includes('espelhado'))) ? 1 : 0;
-        espStr = String(espVal).trim();
+        espStr = isEsp ? 'Espelhado' : 'Nao Espelhado';
       }
+    }
+    scoreEsp = isEsp ? 1.0 : 0.5;
+    if (r['Score Esp.'] !== undefined && r['Score Esp.'] !== null && r['Score Esp.'] !== '') {
+      scoreEsp = parseFloat(r['Score Esp.']) || scoreEsp;
     }
 
     let dataStr = '';
@@ -181,6 +206,15 @@ async function fetchAndProcessData() {
       }
     }
 
+    // Classificação das 4 categorias de Check-in
+    let chkCat = 'Sem check-in';
+    if (isCheckin === 1) {
+      chkCat = '>1:00';
+    } else if (Number(r['Check-in realizado'] || 1) === 1) {
+      const clust = String(r['Cluster Score de Espelhamento'] || '').toLowerCase();
+      chkCat = clust.includes('sem sinal') ? 'Sem sinal' : '<1:00';
+    }
+
     viagens.push({
       id: viagens.length + 1,
       dt: dtVal.replace(/\.0$/, ''),
@@ -190,11 +224,12 @@ async function fetchAndProcessData() {
       motorista,
       transportadora,
       checkin_antecipado: isCheckin,
+      checkin_categoria: chkCat,
       checkin_realizado: 1,
       pct_checkin: 1.0,
       espelhamento: espStr,
       is_espelhado: isEsp,
-      score_esp: isEsp ? 1.0 : 0.0,
+      score_esp: scoreEsp,
       cluster_esp: (isCheckin && isEsp) ? 'Check-in e espelhamento ok' : '',
       rastreador: String(r['Rastreador'] || 'MOTORA').trim(),
       origem: 'Outras / Direto',
@@ -230,7 +265,10 @@ async function fetchAndProcessData() {
         const assocVal = getVal(r, 'associa') || 'Indefinido';
         const isAderente = assocVal.toLowerCase() === 'aderente' ? 1 : 0;
 
+        const dataVal = getVal(r, 'data', 'date', 'emiss', 'carreg') || '-';
+
         dts_records.push({
+          data: dataVal,
           dt: dtRaw,
           origem: getVal(r, 'origem') || 'N/I',
           destino: getVal(r, 'destino') || 'DISSOBEL/SOBRAL(CE)',

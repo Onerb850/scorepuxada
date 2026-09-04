@@ -85,21 +85,39 @@ def process_data():
     motoristas_map = {}
     if os.path.exists(mot_path):
         try:
-            try:
-                df_mot = pd.read_csv(mot_path, sep=';', encoding='utf-8-sig')
-            except:
-                df_mot = pd.read_csv(mot_path, sep=';', encoding='latin1')
+            # Verifica se o arquivo é formato Excel (assinatura ZIP PK..) ou CSV
+            is_excel = False
+            with open(mot_path, 'rb') as f:
+                if f.read(4).startswith(b'PK'):
+                    is_excel = True
+            
+            if is_excel:
+                df_mot = pd.read_excel(mot_path)
+            else:
+                try:
+                    df_mot = pd.read_csv(mot_path, sep=';', encoding='utf-8-sig')
+                except:
+                    try:
+                        df_mot = pd.read_csv(mot_path, sep=',', encoding='utf-8-sig')
+                    except:
+                        df_mot = pd.read_csv(mot_path, sep=';', encoding='latin1')
             
             # Normaliza nomes de colunas removendo BOM e espaços
-            df_mot.columns = [c.replace('\ufeff', '').strip().upper() for c in df_mot.columns]
+            df_mot.columns = [str(c).replace('\ufeff', '').strip().upper() for c in df_mot.columns]
+            
+            # Identifica colunas dinamicamente
+            col_placa = next((c for c in df_mot.columns if 'PLACA' in c), 'PLACAS ATIVAS')
+            col_transp = next((c for c in df_mot.columns if 'TRANSP' in c), 'TRANSPORTADORA')
+            col_mot = next((c for c in df_mot.columns if any(k in c for k in ['MOTORISTA', 'CONDUTOR', 'NOME'])), 'MOTORISTA')
             
             for _, r in df_mot.iterrows():
-                placa = str(r.get('PLACAS ATIVAS', '')).strip().upper().replace('-', '')
-                if placa:
+                placa = str(r.get(col_placa, '')).strip().upper().replace('-', '')
+                if placa and placa != 'NAN':
                     motoristas_map[placa] = {
-                        "transportadora": str(r.get('TRANSPORTADORA', 'Dedicada')).strip(),
-                        "motorista": str(r.get('MOTORISTA', 'Motorista')).strip()
+                        "transportadora": str(r.get(col_transp, 'Dedicada')).strip(),
+                        "motorista": str(r.get(col_mot, 'Motorista')).strip()
                     }
+            print(f"Sucesso ao carregar MOTORISTAS: {len(motoristas_map)} placas mapeadas.")
         except Exception as e:
             print("Error loading MOTORISTAS.csv:", e)
 
@@ -179,7 +197,12 @@ def process_data():
 
                 is_aderente = 1 if assoc_val.strip().lower() == 'aderente' else 0
 
+                data_val = get_col_val(r, 'data', 'date', 'emiss', 'carreg')
+                if not data_val:
+                    data_val = '-'
+
                 dts_item = {
+                    "data": data_val,
                     "dt": dt_raw,
                     "origem": origem_val,
                     "destino": destino_val,
@@ -238,22 +261,47 @@ def process_data():
         checkin_realizado_val = 1 if r.get('Check-in realizado') == 1.0 else 0
         pct_checkin_val = float(r.get('% Check-in', 0.0) or 0.0)
 
+        # Coluna H (Espelhamento) e Coluna K (Score Esp.)
+        # Se Espelhado = 1.0 (100%), Se Nao Espelhado = 0.5 (50%)
         esp_raw = r.get('Espelhamento', '')
         if pd.isna(esp_raw) or esp_raw == '':
             is_espelhado = 0
             espelhamento_str = "Nao Espelhado"
+            score_esp = 0.5 if checkin_realizado_val == 1 else 0.0
         elif isinstance(esp_raw, (int, float)):
             is_espelhado = 1 if float(esp_raw) >= 0.5 else 0
             espelhamento_str = "Espelhado" if is_espelhado else "Nao Espelhado"
+            score_esp = 1.0 if is_espelhado else 0.5
         else:
             esp_txt = str(esp_raw).strip().lower()
             has_negative = any(neg in esp_txt for neg in ['nao', 'não', 'sem', 'fora', '0', 'desconectado', 'inativo'])
             is_espelhado = 1 if (not has_negative and (esp_txt in ['espelhado', 'ok', 'sim', 'conforme', '1', '1.0'] or ('espelhado' in esp_txt and not has_negative))) else 0
-            espelhamento_str = str(esp_raw).strip()
+            espelhamento_str = "Espelhado" if is_espelhado else "Nao Espelhado"
+            score_esp = 1.0 if is_espelhado else 0.5
         
-        score_esp = float(r.get('Score Esp.', 0.0) or 0.0) if pd.notna(r.get('Score Esp.')) else 0.0
+        if pd.notna(r.get('Score Esp.')):
+            try:
+                score_esp = float(r.get('Score Esp.'))
+            except:
+                pass
+        
         cluster_esp = str(r.get('Cluster Score de Espelhamento', '')).strip() if pd.notna(r.get('Cluster Score de Espelhamento')) else 'Sem leitura'
         rastreador = str(r.get('Rastreador', '')).strip() if pd.notna(r.get('Rastreador')) else 'Não informado'
+
+        # Classificação das 4 categorias de Check-in:
+        # - '>1:00': Check-in feito com >1h de antecedência (aderente)
+        # - '<1:00': Check-in realizado com <1h de antecedência
+        # - 'Sem sinal': Check-in sem sinal de GPS válido
+        # - 'Sem check-in': Não realizou check-in
+        if checkin_antecipado_val == 1:
+            checkin_categoria = '>1:00'
+        elif checkin_realizado_val == 1:
+            if 'sem sinal' in str(r.get('Cluster Score de Espelhamento', '')).lower():
+                checkin_categoria = 'Sem sinal'
+            else:
+                checkin_categoria = '<1:00'
+        else:
+            checkin_categoria = 'Sem check-in'
 
         # Merge DTS data
         dts_info = dts_dict.get(dt_str, {
@@ -282,7 +330,8 @@ def process_data():
             "placa": placa_raw if placa_raw else "S/ Placa",
             "cod_sap": str(r.get('Cod. Sap', '')).replace('.0', '') if pd.notna(r.get('Cod. Sap')) else '',
             "revenda": str(r.get('Revenda', 'DISSOBEL/SOBRAL(CE)')).strip() if pd.notna(r.get('Revenda')) else 'DISSOBEL/SOBRAL(CE)',
-            "checkin_antecipado": checkin_antecipado_val,  # 1 se >1h antes, 0 cc
+            "checkin_antecipado": checkin_antecipado_val,  # 1 se >1:00, 0 cc
+            "checkin_categoria": checkin_categoria,
             "checkin_realizado": checkin_realizado_val,
             "pct_checkin": pct_checkin_val,
             "espelhamento": espelhamento_str,
@@ -339,11 +388,14 @@ def process_data():
                 print(f"Notice: could not auto-update INITIAL_DATA in {html_name}:", err)
 
     print(f"Data successfully processed! Generated {len(viagens)} trips in {out_file}")
-    print(f"Agendamento: {ag_data.get('pct_agendado', 0):.2%}")
+    pct_ag = ag_data.get('pct_agendado', 0.0)
     checkin_1h_pct = sum(v['checkin_antecipado'] for v in viagens) / len(viagens) if viagens else 0
-    esp_pct = sum(v['is_espelhado'] for v in viagens) / len(viagens) if viagens else 0
+    esp_pct = sum(v['score_esp'] for v in viagens) / len(viagens) if viagens else 0
+    score_puxada = (pct_ag + checkin_1h_pct + esp_pct) / 3.0
+    print(f"Agendamento: {pct_ag:.2%}")
     print(f"Check-in > 1h: {checkin_1h_pct:.2%}")
-    print(f"Espelhamento: {esp_pct:.2%}")
+    print(f"Espelhamento (Score Col H/K): {esp_pct:.2%} ({sum(v['is_espelhado'] for v in viagens)} espelhados de {len(viagens)})")
+    print(f"SCORE DE PUXADA MASTER: {score_puxada:.2%}")
 
 if __name__ == '__main__':
     process_data()

@@ -52,24 +52,43 @@ def process_gdrive_data():
     f_mot = download_drive_file(GDRIVE_FILES["motoristas"], is_xlsx=False)
 
     # 2. Carregar Motoristas
+    df_mot = None
     try:
-        df_mot = pd.read_csv(f_mot, sep=';', encoding='utf-8')
-    except Exception:
-        f_mot.seek(0)
-        df_mot = pd.read_csv(f_mot, sep=';', encoding='latin1')
-    
-    df_mot.columns = [c.strip() for c in df_mot.columns]
+        if hasattr(f_mot, 'seek'):
+            f_mot.seek(0)
+            magic = f_mot.read(4)
+            f_mot.seek(0)
+            if magic.startswith(b'PK'):
+                df_mot = pd.read_excel(f_mot)
+        if df_mot is None:
+            try:
+                df_mot = pd.read_csv(f_mot, sep=';', encoding='utf-8')
+            except Exception:
+                if hasattr(f_mot, 'seek'): f_mot.seek(0)
+                try:
+                    df_mot = pd.read_csv(f_mot, sep=',', encoding='utf-8')
+                except Exception:
+                    if hasattr(f_mot, 'seek'): f_mot.seek(0)
+                    df_mot = pd.read_csv(f_mot, sep=';', encoding='latin1')
+    except Exception as err_mot:
+        print("Aviso ao carregar motoristas:", err_mot)
     
     placa_to_driver = {}
-    for idx, r in df_mot.iterrows():
-        m_nome = str(r.get('MOTORISTA', '')).strip()
-        placas_str = str(r.get('PLACAS ATIVAS', ''))
-        transp = str(r.get('TRANSPORTADORA', 'Dedicada')).strip()
+    if df_mot is not None:
+        df_mot.columns = [str(c).replace('\ufeff', '').strip().upper() for c in df_mot.columns]
+        col_placa = next((c for c in df_mot.columns if 'PLACA' in c), 'PLACAS ATIVAS')
+        col_transp = next((c for c in df_mot.columns if 'TRANSP' in c), 'TRANSPORTADORA')
+        col_mot = next((c for c in df_mot.columns if any(k in c for k in ['MOTORISTA', 'CONDUTOR', 'NOME'])), 'MOTORISTA')
         
-        placas = [p.strip().replace('-', '').replace(' ', '').upper() for p in placas_str.replace('/', ',').replace(';', ',').split(',') if p.strip()]
-        for p in placas:
-            if len(p) >= 6:
-                placa_to_driver[p] = {"motorista": m_nome, "transportadora": transp}
+        for idx, r in df_mot.iterrows():
+            m_nome = str(r.get(col_mot, '')).strip()
+            placas_str = str(r.get(col_placa, ''))
+            transp = str(r.get(col_transp, 'Dedicada')).strip()
+            
+            placas = [p.strip().replace('-', '').replace(' ', '').upper() for p in placas_str.replace('/', ',').replace(';', ',').split(',') if p.strip()]
+            for p in placas:
+                if len(p) >= 6 and p != 'NAN':
+                    placa_to_driver[p] = {"motorista": m_nome, "transportadora": transp}
 
     # 3. Carregar Agendamento
     df_ag = pd.read_excel(f_ag)
@@ -158,19 +177,29 @@ def process_gdrive_data():
             has_negative = any(neg in chk_txt for neg in ['nao', 'não', 'sem', 'fora', 'atrasado', '0'])
             is_checkin = 1 if (not has_negative and (chk_txt in ['1', '1.0', 'sim', 'ok', 'conforme', 'true'] or 'conforme' in chk_txt or chk_txt == 'ok')) else 0
 
-        # Espelhamento
+        # Espelhamento (Coluna H e Score Esp. Coluna K)
+        chk_realizado = 1 if r.get('Check-in realizado') == 1.0 else 0
         esp_raw = r.get('Espelhamento', '')
         if pd.isna(esp_raw) or esp_raw == '':
             is_esp = 0
             esp_str = "Nao Espelhado"
+            score_esp = 0.5 if chk_realizado == 1 else 0.0
         elif isinstance(esp_raw, (int, float)):
             is_esp = 1 if float(esp_raw) >= 0.5 else 0
             esp_str = "Espelhado" if is_esp else "Nao Espelhado"
+            score_esp = 1.0 if is_esp else 0.5
         else:
             esp_txt = str(esp_raw).strip().lower()
             has_negative = any(neg in esp_txt for neg in ['nao', 'não', 'sem', 'fora', '0', 'desconectado', 'inativo'])
             is_esp = 1 if (not has_negative and (esp_txt in ['espelhado', 'ok', 'sim', 'conforme', '1', '1.0'] or ('espelhado' in esp_txt and not has_negative))) else 0
-            esp_str = str(esp_raw).strip()
+            esp_str = "Espelhado" if is_esp else "Nao Espelhado"
+            score_esp = 1.0 if is_esp else 0.5
+
+        if pd.notna(r.get('Score Esp.')):
+            try:
+                score_esp = float(r.get('Score Esp.'))
+            except:
+                pass
 
         data_carr = r.get(data_col, '')
         if pd.notna(data_carr):
@@ -181,25 +210,38 @@ def process_gdrive_data():
         else:
             data_str = ''
 
+        # Classificação das 4 categorias de Check-in
+        if is_checkin == 1:
+            chk_cat = '>1:00'
+        elif chk_realizado == 1 or is_checkin == 1:
+            if 'sem sinal' in str(r.get('Cluster Score de Espelhamento', '')).lower():
+                chk_cat = 'Sem sinal'
+            else:
+                chk_cat = '<1:00'
+        else:
+            chk_cat = 'Sem check-in'
+
         viagens.append({
-            "id": len(viagens) + 1,
             "dt": dt_str,
+            "data_carregamento": data_str,
             "placa": placa_raw if placa_raw else "S/ Placa",
-            "cod_sap": str(r.get('Cod. Sap', '')).replace('.0', '') if pd.notna(r.get('Cod. Sap')) else '',
-            "revenda": str(r.get('Revenda', 'DISSOBEL/SOBRAL(CE)')).strip() if pd.notna(r.get('Revenda')) else 'DISSOBEL/SOBRAL(CE)',
             "motorista": motorista,
             "transportadora": transportadora,
-            "checkin_antecipado": is_checkin,
-            "checkin_realizado": 1 if r.get('Check-in realizado') == 1.0 else (1 if is_checkin else 0),
-            "pct_checkin": float(r.get('% Check-in', 1.0) or 1.0) if pd.notna(r.get('% Check-in')) else (1.0 if is_checkin else 0.0),
-            "espelhamento": esp_str,
-            "is_espelhado": is_esp,
-            "score_esp": float(r.get('Score Esp.', 0.0) or 0.0) if pd.notna(r.get('Score Esp.')) else 0.0,
-            "cluster_esp": str(r.get('Cluster Score de Espelhamento', 'Check-in e espelhamento ok' if (is_checkin and is_esp) else '')).strip(),
-            "rastreador": str(r.get('Rastreador', 'MOTORA')).strip() if pd.notna(r.get('Rastreador')) else 'Não informado',
             "origem": "Outras / Direto",
             "destino": "DISSOBEL/SOBRAL(CE)",
-            "data_carregamento": data_str
+            "checkin_antecipado": is_checkin,
+            "checkin_categoria": chk_cat,
+            "checkin_realizado": chk_realizado,
+            "pct_checkin": float(r.get('% Check-in', 0.0) or 0.0),
+            "espelhamento": esp_str,
+            "is_espelhado": is_esp,
+            "score_esp": score_esp,
+            "cluster_esp": str(r.get('Cluster Score de Espelhamento', 'Check-in e espelhamento ok')).strip(),
+            "rastreador": str(r.get('Rastreador', 'MOTORA')).strip(),
+            "paradas_maiores_20min": 0,
+            "paradas_justificadas": 0,
+            "checklist_saida": "Não Aderente",
+            "checklist_retorno": "Não Aderente"
         })
 
     # 5. Carregar DTs (Google Drive ou Local)
@@ -284,7 +326,12 @@ def process_gdrive_data():
 
                 is_aderente = 1 if assoc_val.strip().lower() == 'aderente' else 0
 
+                data_val = get_col_val(r, 'data', 'date', 'emiss', 'carreg')
+                if not data_val:
+                    data_val = '-'
+
                 dts_records.append({
+                    "data": data_val,
                     "dt": dt_raw,
                     "origem": origem_val,
                     "destino": destino_val,
