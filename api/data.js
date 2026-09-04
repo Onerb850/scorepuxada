@@ -131,24 +131,30 @@ async function fetchAndProcessData() {
     // Check-in Antecipado
     const chkVal = r['Check-in Antecipado'];
     let isCheckin = 0;
-    if (typeof chkVal === 'number') {
-      isCheckin = chkVal >= 0.5 ? 1 : 0;
-    } else {
-      const chkTxt = String(chkVal || '').toLowerCase();
-      isCheckin = (chkTxt.includes('conforme') || chkTxt.includes('ok') || chkTxt.includes('sim') || chkTxt === '1') ? 1 : 0;
+    if (chkVal !== undefined && chkVal !== null && chkVal !== '') {
+      if (typeof chkVal === 'number') {
+        isCheckin = chkVal >= 0.5 ? 1 : 0;
+      } else {
+        const chkTxt = String(chkVal || '').trim().toLowerCase();
+        const hasNegative = chkTxt.includes('nao') || chkTxt.includes('não') || chkTxt.includes('sem') || chkTxt.includes('fora') || chkTxt.includes('atrasado') || chkTxt.startsWith('0');
+        isCheckin = (!hasNegative && (chkTxt === '1' || chkTxt === '1.0' || chkTxt === 'sim' || chkTxt === 'ok' || chkTxt === 'conforme' || chkTxt === 'true' || chkTxt.includes('conforme'))) ? 1 : 0;
+      }
     }
 
     // Espelhamento
     const espVal = r['Espelhamento'];
     let isEsp = 0;
     let espStr = 'Nao Espelhado';
-    if (typeof espVal === 'number') {
-      isEsp = espVal >= 0.5 ? 1 : 0;
-      espStr = isEsp ? 'Espelhado' : 'Nao Espelhado';
-    } else {
-      const espTxt = String(espVal || '').toLowerCase();
-      isEsp = (espTxt.includes('espelhado') || espTxt.includes('conforme') || espTxt.includes('ok') || espTxt.includes('sim') || espTxt === '1') ? 1 : 0;
-      espStr = String(espVal || (isEsp ? 'Espelhado' : 'Nao Espelhado')).trim();
+    if (espVal !== undefined && espVal !== null && espVal !== '') {
+      if (typeof espVal === 'number') {
+        isEsp = espVal >= 0.5 ? 1 : 0;
+        espStr = isEsp ? 'Espelhado' : 'Nao Espelhado';
+      } else {
+        const espTxt = String(espVal || '').trim().toLowerCase();
+        const hasNegative = espTxt.includes('nao') || espTxt.includes('não') || espTxt.includes('sem') || espTxt.includes('fora') || espTxt.includes('desconectado') || espTxt.startsWith('0');
+        isEsp = (!hasNegative && (espTxt === 'espelhado' || espTxt === 'ok' || espTxt === 'sim' || espTxt === 'conforme' || espTxt === '1' || espTxt === '1.0' || espTxt.includes('espelhado'))) ? 1 : 0;
+        espStr = String(espVal).trim();
+      }
     }
 
     let dataStr = '';

@@ -148,17 +148,18 @@ def process_gdrive_data():
 
         # Check-in Antecipado
         chk_raw = r.get('Check-in Antecipado', None)
-        if pd.isna(chk_raw):
+        if pd.isna(chk_raw) or chk_raw == '':
             is_checkin = 0
         elif isinstance(chk_raw, (int, float)):
             is_checkin = 1 if float(chk_raw) >= 0.5 else 0
         else:
             chk_txt = str(chk_raw).strip().lower()
-            is_checkin = 1 if ('conforme' in chk_txt or 'ok' in chk_txt or 'sim' in chk_txt or '1' in chk_txt) else 0
+            has_negative = any(neg in chk_txt for neg in ['nao', 'não', 'sem', 'fora', 'atrasado', '0'])
+            is_checkin = 1 if (not has_negative and (chk_txt in ['1', '1.0', 'sim', 'ok', 'conforme', 'true'] or 'conforme' in chk_txt or chk_txt == 'ok')) else 0
 
         # Espelhamento
         esp_raw = r.get('Espelhamento', '')
-        if pd.isna(esp_raw):
+        if pd.isna(esp_raw) or esp_raw == '':
             is_esp = 0
             esp_str = "Nao Espelhado"
         elif isinstance(esp_raw, (int, float)):
@@ -166,7 +167,8 @@ def process_gdrive_data():
             esp_str = "Espelhado" if is_esp else "Nao Espelhado"
         else:
             esp_txt = str(esp_raw).strip().lower()
-            is_esp = 1 if ('espelhado' in esp_txt or 'conforme' in esp_txt or 'ok' in esp_txt or 'sim' in esp_txt or '1' in esp_txt) else 0
+            has_negative = any(neg in esp_txt for neg in ['nao', 'não', 'sem', 'fora', '0', 'desconectado', 'inativo'])
+            is_esp = 1 if (not has_negative and (esp_txt in ['espelhado', 'ok', 'sim', 'conforme', '1', '1.0'] or ('espelhado' in esp_txt and not has_negative))) else 0
             esp_str = str(esp_raw).strip()
 
         data_carr = r.get(data_col, '')
