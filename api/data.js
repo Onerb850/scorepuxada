@@ -175,10 +175,24 @@ async function fetchAndProcessData() {
       }
     }
 
+    // Check-in Realizado
+    let isCheckinRealizado = 0;
+    const chkRealVal = r['Check-in realizado'];
+    if (chkRealVal !== undefined && chkRealVal !== null && chkRealVal !== '') {
+      if (typeof chkRealVal === 'number') {
+        isCheckinRealizado = chkRealVal >= 0.5 ? 1 : 0;
+      } else {
+        const chkRealTxt = String(chkRealVal).trim().toLowerCase();
+        isCheckinRealizado = (chkRealTxt === '1' || chkRealTxt === '1.0' || chkRealTxt === 'sim' || chkRealTxt === 'ok' || chkRealTxt === 'true') ? 1 : 0;
+      }
+    } else {
+      isCheckinRealizado = isCheckin === 1 ? 1 : 0;
+    }
+
     // Espelhamento (Coluna H e Score Esp. Coluna K)
     let isEsp = 0;
     let espStr = 'Nao Espelhado';
-    let scoreEsp = 0.5;
+    let scoreEsp = 0.0;
     const espVal = r['Espelhamento'];
     if (espVal !== undefined && espVal !== null && espVal !== '') {
       if (typeof espVal === 'number') {
@@ -187,12 +201,20 @@ async function fetchAndProcessData() {
         const espTxt = String(espVal || '').trim().toLowerCase();
         const hasNegative = espTxt.includes('nao') || espTxt.includes('não') || espTxt.includes('sem') || espTxt.includes('fora') || espTxt.includes('desconectado') || espTxt.startsWith('0');
         isEsp = (!hasNegative && (espTxt === 'espelhado' || espTxt === 'ok' || espTxt === 'sim' || espTxt === 'conforme' || espTxt === '1' || espTxt === '1.0' || espTxt.includes('espelhado'))) ? 1 : 0;
-        espStr = isEsp ? 'Espelhado' : 'Nao Espelhado';
       }
     }
-    scoreEsp = isEsp ? 1.0 : 0.5;
+    espStr = isEsp ? 'Espelhado' : 'Nao Espelhado';
+
+    // Regra correta (Score Esp.):
+    // - Espelhado -> 1,0
+    // - Não Espelhado MAS Check-in realizado = 1 -> 0,5
+    // - Não Espelhado E Check-in realizado vazio/0 -> 0,0
+    scoreEsp = isEsp ? 1.0 : (isCheckinRealizado === 1 ? 0.5 : 0.0);
     if (r['Score Esp.'] !== undefined && r['Score Esp.'] !== null && r['Score Esp.'] !== '') {
-      scoreEsp = parseFloat(r['Score Esp.']) || scoreEsp;
+      const parsedScore = parseFloat(String(r['Score Esp.']).replace(',', '.'));
+      if (!isNaN(parsedScore)) {
+        scoreEsp = parsedScore;
+      }
     }
 
     let dataStr = '';
@@ -210,7 +232,7 @@ async function fetchAndProcessData() {
     let chkCat = 'Sem check-in';
     if (isCheckin === 1) {
       chkCat = '>1:00';
-    } else if (Number(r['Check-in realizado'] || 1) === 1) {
+    } else if (isCheckinRealizado === 1) {
       const clust = String(r['Cluster Score de Espelhamento'] || '').toLowerCase();
       chkCat = clust.includes('sem sinal') ? 'Sem sinal' : '<1:00';
     }
@@ -225,8 +247,8 @@ async function fetchAndProcessData() {
       transportadora,
       checkin_antecipado: isCheckin,
       checkin_categoria: chkCat,
-      checkin_realizado: 1,
-      pct_checkin: 1.0,
+      checkin_realizado: isCheckinRealizado,
+      pct_checkin: isCheckinRealizado === 1 ? 1.0 : 0.0,
       espelhamento: espStr,
       is_espelhado: isEsp,
       score_esp: scoreEsp,
@@ -310,10 +332,13 @@ async function fetchAndProcessData() {
 
 // Handler para Vercel Serverless Function
 module.exports = async function handler(req, res) {
-  // CORS
+  // CORS & Strict No-Cache
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
