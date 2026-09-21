@@ -11,6 +11,7 @@ async function downloadDriveBuffer(fileId) {
   if (!fileId) return null;
   const cb = Date.now() + '_' + Math.random().toString(36).substring(2, 7);
   const urls = [
+    `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?tqx=out:csv&t=${cb}`,
     `https://docs.google.com/spreadsheets/d/${fileId}/export?format=csv&t=${cb}`,
     `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx&t=${cb}`,
     `https://drive.google.com/uc?export=download&id=${fileId}&t=${cb}`,
