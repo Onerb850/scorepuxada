@@ -3,32 +3,40 @@ const XLSX = require('xlsx');
 const GDRIVE_FILES = {
   agendamento: "192WucjsTnTu5iB5LNTkQqS9RGHlIZbZD",
   espelhamento: "1KO8r6YmPMsksCrX3lM5zhXr2nRvf1nuf",
-  motoristas: "13Qs0yl8V6OukgJ2qHMwMZkMmbZqCQZHD",
+  motoristas: "1TO7LS-9mEXQUGPjpoi8t5rZGRIrXxNR2Bo-QSrCONRA",
   dts: "1_edk72CGLWSob-ehIs4k5lN4jzLjlnBf"
 };
 
 async function downloadDriveBuffer(fileId) {
   if (!fileId) return null;
-  const url1 = `https://drive.google.com/uc?export=download&id=${fileId}`;
-  const url2 = `https://drive.usercontent.google.com/download?id=${fileId}&export=download`;
+  const cb = Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+  // Reordenação otimizada: tenta formatos diretos mais rápidos primeiro
+  const urls = [
+    `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx&t=${cb}`,
+    `https://docs.google.com/spreadsheets/d/${fileId}/export?format=csv&t=${cb}`,
+    `https://docs.google.com/spreadsheets/d/${fileId}/gviz/tq?tqx=out:csv&t=${cb}`,
+    `https://drive.usercontent.google.com/download?id=${fileId}&export=download&t=${cb}`,
+    `https://drive.google.com/uc?export=download&id=${fileId}&t=${cb}`
+  ];
   
-  try {
-    const res = await fetch(url1, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
-    });
-    if (res.ok) {
-      const buf = Buffer.from(await res.arrayBuffer());
-      if (buf.length > 100) return buf;
-    }
-  } catch (e) {}
-
-  const res2 = await fetch(url2, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
-  });
-  if (res2.ok) {
-    return Buffer.from(await res2.arrayBuffer());
+  for (const u of urls) {
+    try {
+      const res = await fetch(u, {
+        headers: { 
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        },
+        cache: 'no-store',
+        signal: AbortSignal.timeout(3500)
+      });
+      if (res.ok) {
+        const buf = Buffer.from(await res.arrayBuffer());
+        if (buf.length > 50) return buf;
+      }
+    } catch (e) {}
   }
-  throw new Error(`Falha ao baixar arquivo ${fileId} do Google Drive`);
+  return null;
 }
 
 function parseCSV(text) {
@@ -51,34 +59,36 @@ function parseCSV(text) {
 }
 
 async function fetchAndProcessData() {
-  // 1. Download de todos os arquivos em paralelo para velocidade máxima
-  const promises = [
-    downloadDriveBuffer(GDRIVE_FILES.agendamento),
-    downloadDriveBuffer(GDRIVE_FILES.espelhamento),
-    downloadDriveBuffer(GDRIVE_FILES.motoristas)
-  ];
-  if (GDRIVE_FILES.dts) {
-    promises.push(downloadDriveBuffer(GDRIVE_FILES.dts).catch(() => null));
+  // 1. Download de todos os arquivos em paralelo com tratamento individual de falha
+  const [bufAg, bufEsp, bufMot, bufDts] = await Promise.all([
+    downloadDriveBuffer(GDRIVE_FILES.agendamento).catch(() => null),
+    downloadDriveBuffer(GDRIVE_FILES.espelhamento).catch(() => null),
+    downloadDriveBuffer(GDRIVE_FILES.motoristas).catch(() => null),
+    downloadDriveBuffer(GDRIVE_FILES.dts).catch(() => null)
+  ]);
+
+  if (!bufEsp && !bufAg) {
+    throw new Error('Não foi possível obter as planilhas do Google Drive. Verifique a conexão e permissões dos arquivos.');
   }
 
-  const [bufAg, bufEsp, bufMot, bufDts] = await Promise.all(promises);
-
-  // 2. Processar Motoristas
+  // 2. Processar Motoristas (tolerante a falhas)
   let motRows = [];
-  try {
-    if (bufMot && bufMot[0] === 0x50 && bufMot[1] === 0x4B) {
-      const wbMot = XLSX.read(bufMot, { type: 'buffer' });
-      const sheetMot = wbMot.Sheets[wbMot.SheetNames[0]];
-      motRows = XLSX.utils.sheet_to_json(sheetMot, { defval: '' });
-    } else {
-      const motText = bufMot.toString('utf-8');
-      motRows = parseCSV(motText);
-    }
-  } catch (e) {
+  if (bufMot) {
     try {
-      const motText = bufMot.toString('utf-8');
-      motRows = parseCSV(motText);
-    } catch (err) {}
+      if (bufMot[0] === 0x50 && bufMot[1] === 0x4B) {
+        const wbMot = XLSX.read(bufMot, { type: 'buffer' });
+        const sheetMot = wbMot.Sheets[wbMot.SheetNames[0]];
+        motRows = XLSX.utils.sheet_to_json(sheetMot, { defval: '' });
+      } else {
+        const motText = bufMot.toString('utf-8');
+        motRows = parseCSV(motText);
+      }
+    } catch (e) {
+      try {
+        const motText = bufMot.toString('utf-8');
+        motRows = parseCSV(motText);
+      } catch (err) {}
+    }
   }
 
   const placaToDriver = {};
@@ -102,162 +112,185 @@ async function fetchAndProcessData() {
   }
 
   // 3. Processar Agendamento
-  const wbAg = XLSX.read(bufAg, { type: 'buffer' });
-  let agSheetName = wbAg.SheetNames[0];
-  for (const s of wbAg.SheetNames) {
-    if (s.toLowerCase().includes('carreg') || s.toLowerCase().includes('export')) {
-      agSheetName = s;
-      break;
-    }
-  }
-  const sheetAg = wbAg.Sheets[agSheetName];
-  const agRows = XLSX.utils.sheet_to_json(sheetAg, { defval: '' });
-  
-  const cleanAg = agRows.filter(r => {
-    const rev = String(r['Revendas'] || '').toLowerCase();
-    const c1 = String(Object.values(r)[0] || '').toLowerCase();
-    return rev !== 'total' && c1 !== 'total' && !c1.startsWith('filtros');
-  });
-
-  let rowAg = cleanAg.find(r => {
-    const str = JSON.stringify(r).toUpperCase();
-    return str.includes('SOBRAL') || str.includes('DISSOBEL');
-  }) || cleanAg[0] || {};
-
-  const gradePlan = parseInt(rowAg['Grade Plan Carros'] || 0, 10) || 0;
-  const carrosCarr = parseInt(rowAg['Carros Carregados'] || 0, 10) || 0;
-  const carrosAg = parseInt(rowAg['Carros Agendados'] || 0, 10) || 0;
-  const pctAg = parseFloat(rowAg['% Agendado'] || 0.0) || 0.0;
-  const pctFuro = parseFloat(rowAg['% Furo'] || 0.0) || 0.0;
-
-  const agSummary = {
-    geo: String(rowAg['GEO'] || 'GEO NO'),
-    revenda: String(rowAg['Revendas'] || 'DISSOBEL/SOBRAL(CE)'),
-    grade_plan_carros: gradePlan,
-    carros_carregados: carrosCarr,
-    carros_agendados: carrosAg,
-    pct_agendado: pctAg,
-    pct_furo: pctFuro,
+  let agSummary = {
+    geo: 'GEO NO',
+    revenda: 'DISSOBEL/SOBRAL(CE)',
+    grade_plan_carros: 0,
+    carros_carregados: 0,
+    carros_agendados: 0,
+    pct_agendado: 0.90,
+    pct_furo: 0.0,
     meta: 0.90
   };
 
+  if (bufAg) {
+    try {
+      const wbAg = XLSX.read(bufAg, { type: 'buffer' });
+      let agSheetName = wbAg.SheetNames[0];
+      for (const s of wbAg.SheetNames) {
+        if (s.toLowerCase().includes('carreg') || s.toLowerCase().includes('export')) {
+          agSheetName = s;
+          break;
+        }
+      }
+      const sheetAg = wbAg.Sheets[agSheetName];
+      const agRows = XLSX.utils.sheet_to_json(sheetAg, { defval: '' });
+      
+      const cleanAg = agRows.filter(r => {
+        const rev = String(r['Revendas'] || '').toLowerCase();
+        const c1 = String(Object.values(r)[0] || '').toLowerCase();
+        return rev !== 'total' && c1 !== 'total' && !c1.startsWith('filtros');
+      });
+
+      let rowAg = cleanAg.find(r => {
+        const str = JSON.stringify(r).toUpperCase();
+        return str.includes('SOBRAL') || str.includes('DISSOBEL');
+      }) || cleanAg[0] || {};
+
+      const gradePlan = parseInt(rowAg['Grade Plan Carros'] || 0, 10) || 0;
+      const carrosCarr = parseInt(rowAg['Carros Carregados'] || 0, 10) || 0;
+      const carrosAg = parseInt(rowAg['Carros Agendados'] || 0, 10) || 0;
+      
+      let pctAg = parseFloat(String(rowAg['% Agendado'] || 0.0).replace(',', '.').replace('%', '')) || 0.0;
+      if (pctAg > 1.0) pctAg = pctAg / 100;
+
+      let pctFuro = parseFloat(String(rowAg['% Furo'] || 0.0).replace(',', '.').replace('%', '')) || 0.0;
+      if (pctFuro > 1.0) pctFuro = pctFuro / 100;
+
+      agSummary = {
+        geo: String(rowAg['GEO'] || 'GEO NO'),
+        revenda: String(rowAg['Revendas'] || 'DISSOBEL/SOBRAL(CE)'),
+        grade_plan_carros: gradePlan,
+        carros_carregados: carrosCarr,
+        carros_agendados: carrosAg,
+        pct_agendado: pctAg,
+        pct_furo: pctFuro,
+        meta: 0.90
+      };
+    } catch (errAg) {
+      console.warn('Aviso ao processar agendamento:', errAg);
+    }
+  }
+
   // 4. Processar Espelhamento
-  const wbEsp = XLSX.read(bufEsp, { type: 'buffer' });
-  const sheetEsp = wbEsp.Sheets[wbEsp.SheetNames[0]];
-  const espRows = XLSX.utils.sheet_to_json(sheetEsp, { defval: '' });
-
-  const cleanEsp = espRows.filter(r => {
-    const dt = String(r['DT/FO'] || r['DT'] || '');
-    const c1 = String(Object.values(r)[0] || '');
-    return dt && dt !== 'total' && !c1.startsWith('Filtros') && !dt.startsWith('Filtros');
-  });
-
   const viagens = [];
-  for (const r of cleanEsp) {
-    const dtVal = String(r['DT/FO'] || r['DT'] || '').trim();
-    const placaRaw = String(r['Placa'] || '').trim().toUpperCase().replace(/\.0$/, '');
-    const pClean = placaRaw.replace(/[- ]/g, '').toUpperCase();
-    const driver = placaToDriver[pClean] || { motorista: 'Não vinculado', transportadora: 'DISSOBEL / Terceira' };
+  if (bufEsp) {
+    const wbEsp = XLSX.read(bufEsp, { type: 'buffer' });
+    const sheetEsp = wbEsp.Sheets[wbEsp.SheetNames[0]];
+    const espRows = XLSX.utils.sheet_to_json(sheetEsp, { defval: '' });
 
-    const motorista = driver.motorista;
-    const transportadora = driver.transportadora;
-
-    // Check-in Antecipado
-    let isCheckin = 0;
-    const chkVal = r['Check-in Antecipado'];
-    if (chkVal !== undefined && chkVal !== null && chkVal !== '') {
-      if (typeof chkVal === 'number') {
-        isCheckin = chkVal >= 0.5 ? 1 : 0;
-      } else {
-        const chkTxt = String(chkVal).trim().toLowerCase();
-        const hasNegative = chkTxt.includes('nao') || chkTxt.includes('não') || chkTxt.includes('sem') || chkTxt.includes('fora') || chkTxt.includes('atrasado') || chkTxt.startsWith('0');
-        isCheckin = (!hasNegative && (chkTxt === '1' || chkTxt === '1.0' || chkTxt === 'sim' || chkTxt === 'ok' || chkTxt === 'conforme' || chkTxt === 'true')) ? 1 : 0;
-      }
-    }
-
-    // Check-in Realizado
-    let isCheckinRealizado = 0;
-    const chkRealVal = r['Check-in realizado'];
-    if (chkRealVal !== undefined && chkRealVal !== null && chkRealVal !== '') {
-      if (typeof chkRealVal === 'number') {
-        isCheckinRealizado = chkRealVal >= 0.5 ? 1 : 0;
-      } else {
-        const chkRealTxt = String(chkRealVal).trim().toLowerCase();
-        isCheckinRealizado = (chkRealTxt === '1' || chkRealTxt === '1.0' || chkRealTxt === 'sim' || chkRealTxt === 'ok' || chkRealTxt === 'true') ? 1 : 0;
-      }
-    } else {
-      isCheckinRealizado = isCheckin === 1 ? 1 : 0;
-    }
-
-    // Espelhamento (Coluna H e Score Esp. Coluna K)
-    let isEsp = 0;
-    let espStr = 'Nao Espelhado';
-    let scoreEsp = 0.0;
-    const espVal = r['Espelhamento'];
-    if (espVal !== undefined && espVal !== null && espVal !== '') {
-      if (typeof espVal === 'number') {
-        isEsp = espVal >= 0.5 ? 1 : 0;
-      } else {
-        const espTxt = String(espVal || '').trim().toLowerCase();
-        const hasNegative = espTxt.includes('nao') || espTxt.includes('não') || espTxt.includes('sem') || espTxt.includes('fora') || espTxt.includes('desconectado') || espTxt.startsWith('0');
-        isEsp = (!hasNegative && (espTxt === 'espelhado' || espTxt === 'ok' || espTxt === 'sim' || espTxt === 'conforme' || espTxt === '1' || espTxt === '1.0' || espTxt.includes('espelhado'))) ? 1 : 0;
-      }
-    }
-    espStr = isEsp ? 'Espelhado' : 'Nao Espelhado';
-
-    // Regra correta (Score Esp.):
-    // - Espelhado -> 1,0
-    // - Não Espelhado MAS Check-in realizado = 1 -> 0,5
-    // - Não Espelhado E Check-in realizado vazio/0 -> 0,0
-    scoreEsp = isEsp ? 1.0 : (isCheckinRealizado === 1 ? 0.5 : 0.0);
-    if (r['Score Esp.'] !== undefined && r['Score Esp.'] !== null && r['Score Esp.'] !== '') {
-      const parsedScore = parseFloat(String(r['Score Esp.']).replace(',', '.'));
-      if (!isNaN(parsedScore)) {
-        scoreEsp = parsedScore;
-      }
-    }
-
-    let dataStr = '';
-    const rawDate = r['Data Carreg.'] || r['Data'] || '';
-    if (rawDate) {
-      if (typeof rawDate === 'number') {
-        const dateObj = new Date((rawDate - 25569) * 86400 * 1000);
-        dataStr = dateObj.toISOString().slice(0, 10);
-      } else {
-        dataStr = String(rawDate).slice(0, 10);
-      }
-    }
-
-    // Classificação das 4 categorias de Check-in
-    let chkCat = 'Sem check-in';
-    if (isCheckin === 1) {
-      chkCat = '>1:00';
-    } else if (isCheckinRealizado === 1) {
-      const clust = String(r['Cluster Score de Espelhamento'] || '').toLowerCase();
-      chkCat = clust.includes('sem sinal') ? 'Sem sinal' : '<1:00';
-    }
-
-    viagens.push({
-      id: viagens.length + 1,
-      dt: dtVal.replace(/\.0$/, ''),
-      placa: placaRaw || 'S/ Placa',
-      cod_sap: String(r['Cod. Sap'] || '').replace(/\.0$/, ''),
-      revenda: String(r['Revenda'] || 'DISSOBEL/SOBRAL(CE)').trim(),
-      motorista,
-      transportadora,
-      checkin_antecipado: isCheckin,
-      checkin_categoria: chkCat,
-      checkin_realizado: isCheckinRealizado,
-      pct_checkin: isCheckinRealizado === 1 ? 1.0 : 0.0,
-      espelhamento: espStr,
-      is_espelhado: isEsp,
-      score_esp: scoreEsp,
-      cluster_esp: (isCheckin && isEsp) ? 'Check-in e espelhamento ok' : '',
-      rastreador: String(r['Rastreador'] || 'MOTORA').trim(),
-      origem: 'Outras / Direto',
-      destino: 'DISSOBEL/SOBRAL(CE)',
-      data_carregamento: dataStr
+    const cleanEsp = espRows.filter(r => {
+      const dt = String(r['DT/FO'] || r['DT'] || '');
+      const c1 = String(Object.values(r)[0] || '');
+      return dt && dt !== 'total' && !c1.startsWith('Filtros') && !dt.startsWith('Filtros');
     });
+
+    for (const r of cleanEsp) {
+      const dtVal = String(r['DT/FO'] || r['DT'] || '').trim();
+      const placaRaw = String(r['Placa'] || '').trim().toUpperCase().replace(/\.0$/, '');
+      const pClean = placaRaw.replace(/[- ]/g, '').toUpperCase();
+      const driver = placaToDriver[pClean] || { motorista: 'Não vinculado', transportadora: 'DISSOBEL / Terceira' };
+
+      const motorista = driver.motorista;
+      const transportadora = driver.transportadora;
+
+      // Check-in Antecipado
+      let isCheckin = 0;
+      const chkVal = r['Check-in Antecipado'];
+      if (chkVal !== undefined && chkVal !== null && chkVal !== '') {
+        if (typeof chkVal === 'number') {
+          isCheckin = chkVal >= 0.5 ? 1 : 0;
+        } else {
+          const chkTxt = String(chkVal).trim().toLowerCase();
+          const hasNegative = chkTxt.includes('nao') || chkTxt.includes('não') || chkTxt.includes('sem') || chkTxt.includes('fora') || chkTxt.includes('atrasado') || chkTxt.startsWith('0');
+          isCheckin = (!hasNegative && (chkTxt === '1' || chkTxt === '1.0' || chkTxt === 'sim' || chkTxt === 'ok' || chkTxt === 'conforme' || chkTxt === 'true')) ? 1 : 0;
+        }
+      }
+
+      // Check-in Realizado
+      let isCheckinRealizado = 0;
+      const chkRealVal = r['Check-in realizado'];
+      if (chkRealVal !== undefined && chkRealVal !== null && chkRealVal !== '') {
+        if (typeof chkRealVal === 'number') {
+          isCheckinRealizado = chkRealVal >= 0.5 ? 1 : 0;
+        } else {
+          const chkRealTxt = String(chkRealVal).trim().toLowerCase();
+          isCheckinRealizado = (chkRealTxt === '1' || chkRealTxt === '1.0' || chkRealTxt === 'sim' || chkRealTxt === 'ok' || chkRealTxt === 'true') ? 1 : 0;
+        }
+      } else {
+        isCheckinRealizado = isCheckin === 1 ? 1 : 0;
+      }
+
+      // Espelhamento (Coluna H e Score Esp. Coluna K)
+      let isEsp = 0;
+      let espStr = 'Nao Espelhado';
+      let scoreEsp = 0.0;
+      const espVal = r['Espelhamento'];
+      if (espVal !== undefined && espVal !== null && espVal !== '') {
+        if (typeof espVal === 'number') {
+          isEsp = espVal >= 0.5 ? 1 : 0;
+        } else {
+          const espTxt = String(espVal || '').trim().toLowerCase();
+          const hasNegative = espTxt.includes('nao') || espTxt.includes('não') || espTxt.includes('sem') || espTxt.includes('fora') || espTxt.includes('desconectado') || espTxt.startsWith('0');
+          isEsp = (!hasNegative && (espTxt === 'espelhado' || espTxt === 'ok' || espTxt === 'sim' || espTxt === 'conforme' || espTxt === '1' || espTxt === '1.0' || espTxt.includes('espelhado'))) ? 1 : 0;
+        }
+      }
+      espStr = isEsp ? 'Espelhado' : 'Nao Espelhado';
+
+      // Regra oficial do Score Espelhamento:
+      // - Espelhado -> 1,0
+      // - Não Espelhado MAS Check-in realizado = 1 -> 0,5
+      // - Não Espelhado E Check-in realizado vazio/0 -> 0,0
+      scoreEsp = isEsp ? 1.0 : (isCheckinRealizado === 1 ? 0.5 : 0.0);
+      if (r['Score Esp.'] !== undefined && r['Score Esp.'] !== null && r['Score Esp.'] !== '') {
+        const parsedScore = parseFloat(String(r['Score Esp.']).replace(',', '.'));
+        if (!isNaN(parsedScore)) {
+          scoreEsp = parsedScore > 1.0 ? parsedScore / 10 : parsedScore;
+        }
+      }
+
+      let dataStr = '';
+      const rawDate = r['Data Carreg.'] || r['Data'] || '';
+      if (rawDate) {
+        if (typeof rawDate === 'number') {
+          const dateObj = new Date((rawDate - 25569) * 86400 * 1000);
+          dataStr = dateObj.toISOString().slice(0, 10);
+        } else {
+          dataStr = String(rawDate).slice(0, 10);
+        }
+      }
+
+      // Classificação das 4 categorias de Check-in
+      let chkCat = 'Sem check-in';
+      if (isCheckin === 1) {
+        chkCat = '>1:00';
+      } else if (isCheckinRealizado === 1) {
+        const clust = String(r['Cluster Score de Espelhamento'] || '').toLowerCase();
+        chkCat = clust.includes('sem sinal') ? 'Sem sinal' : '<1:00';
+      }
+
+      viagens.push({
+        id: viagens.length + 1,
+        dt: dtVal.replace(/\.0$/, ''),
+        placa: placaRaw || 'S/ Placa',
+        cod_sap: String(r['Cod. Sap'] || '').replace(/\.0$/, ''),
+        revenda: String(r['Revenda'] || 'DISSOBEL/SOBRAL(CE)').trim(),
+        motorista,
+        transportadora,
+        checkin_antecipado: isCheckin,
+        checkin_categoria: chkCat,
+        checkin_realizado: isCheckinRealizado,
+        pct_checkin: isCheckinRealizado === 1 ? 1.0 : 0.0,
+        espelhamento: espStr,
+        is_espelhado: isEsp,
+        score_esp: scoreEsp,
+        cluster_esp: (isCheckin && isEsp) ? 'Check-in e espelhamento ok' : '',
+        rastreador: String(r['Rastreador'] || 'MOTORA').trim(),
+        origem: 'Outras / Direto',
+        destino: 'DISSOBEL/SOBRAL(CE)',
+        data_carregamento: dataStr
+      });
+    }
   }
 
   // 5. Processar DTs
@@ -309,7 +342,7 @@ async function fetchAndProcessData() {
         });
       }
     } catch (e) {
-      console.error('Erro ao processar dts buffer:', e);
+      console.warn('Aviso ao processar DTs buffer:', e);
     }
   }
 
@@ -331,7 +364,7 @@ async function fetchAndProcessData() {
 }
 
 // Handler para Vercel Serverless Function
-module.exports = async function handler(req, res) {
+async function handler(req, res) {
   // CORS & Strict No-Cache
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -352,4 +385,6 @@ module.exports = async function handler(req, res) {
     console.error("Erro ao sincronizar com Google Drive:", error);
     res.status(500).json({ error: error.message });
   }
-};
+}
+
+module.exports = handler;
